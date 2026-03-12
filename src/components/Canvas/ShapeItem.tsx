@@ -15,12 +15,13 @@ import type Konva from 'konva';
 interface ShapeItemProps {
   shape: VenueShape;
   isViolating: boolean;
+  layerLocked: boolean;
 }
 
-export function ShapeItem({ shape, isViolating }: ShapeItemProps) {
+export function ShapeItem({ shape, isViolating, layerLocked }: ShapeItemProps) {
   const selectedShapeId = useEditorStore((s) => s.selectedShapeId);
   const snapToGrid = useEditorStore((s) => s.snapToGrid);
-  const gridSize = useEditorStore((s) => s.layout.gridSize);
+  const layout = useEditorStore((s) => s.layout);
   const guests = useEditorStore((s) => s.layout.guests);
 
   const updateShape = useEditorStore((s) => s.updateShape);
@@ -30,6 +31,7 @@ export function ShapeItem({ shape, isViolating }: ShapeItemProps) {
   const trRef = useRef<Konva.Transformer>(null);
 
   const isSelected = selectedShapeId === shape.id;
+  const isInteractive = !shape.locked && !layerLocked;
 
   // Attach transformer when selected
   useEffect(() => {
@@ -42,6 +44,10 @@ export function ShapeItem({ shape, isViolating }: ShapeItemProps) {
   const handleDragEnd = (e: Konva.KonvaEventObject<DragEvent>) => {
     let x = e.target.x();
     let y = e.target.y();
+
+    const gridSizeM = layout.gridSizeM;
+    const scale = layout.scale;
+    const gridSize = gridSizeM * scale;
 
     if (snapToGrid) {
       const snapped = snapPosition(x, y, gridSize);
@@ -60,16 +66,13 @@ export function ShapeItem({ shape, isViolating }: ShapeItemProps) {
     const scaleX = node.scaleX();
     const scaleY = node.scaleY();
 
-    // Get current transform state
     const x = node.x();
     const y = node.y();
     const rotation = node.rotation();
 
-    // Apply scale to dimensions
     const newWidth = shape.width * scaleX;
     const newHeight = shape.height * scaleY;
 
-    // Reset scale
     node.scaleX(1);
     node.scaleY(1);
 
@@ -86,11 +89,9 @@ export function ShapeItem({ shape, isViolating }: ShapeItemProps) {
     selectShape(shape.id);
   };
 
-  // Calculate guest assignments for tables
   const assignedGuests = guests.filter((g) => g.tableId === shape.id);
   const assignedCount = assignedGuests.length;
 
-  // Render shape based on kind
   const renderPrimitive = () => {
     const baseProps = {
       fill: shape.color,
@@ -104,7 +105,6 @@ export function ShapeItem({ shape, isViolating }: ShapeItemProps) {
         return (
           <>
             <Circle radius={radius} {...baseProps} />
-            {/* Seat circles around the table */}
             {Array.from({ length: shape.seats }).map((_, i) => {
               const angle = (i / shape.seats) * 2 * Math.PI - Math.PI / 2;
               const cx = Math.cos(angle) * (radius + 14);
@@ -115,7 +115,7 @@ export function ShapeItem({ shape, isViolating }: ShapeItemProps) {
                   x={cx}
                   y={cy}
                   radius={7}
-                  fill="#9ca3af"
+                  fill="#d6d3d1"
                   opacity={0.7}
                 />
               );
@@ -132,7 +132,6 @@ export function ShapeItem({ shape, isViolating }: ShapeItemProps) {
               height={shape.height}
               {...baseProps}
             />
-            {/* Seat circles on long sides */}
             {Array.from({ length: shape.seats }).map((_, i) => {
               const seatsPerSide = Math.ceil(shape.seats / 2);
               const isTop = i < seatsPerSide;
@@ -148,7 +147,7 @@ export function ShapeItem({ shape, isViolating }: ShapeItemProps) {
                   x={cx}
                   y={cy}
                   radius={7}
-                  fill="#9ca3af"
+                  fill="#d6d3d1"
                   opacity={0.7}
                 />
               );
@@ -162,8 +161,8 @@ export function ShapeItem({ shape, isViolating }: ShapeItemProps) {
           <Rect
             width={shape.width}
             height={shape.height}
-            fill="#4b5563"
-            stroke="#334155"
+            fill="#78716c"
+            stroke="#57534e"
             strokeWidth={2}
           />
         );
@@ -197,7 +196,7 @@ export function ShapeItem({ shape, isViolating }: ShapeItemProps) {
             width={shape.width}
             height={shape.height}
             fill={shape.color}
-            stroke="#6b7280"
+            stroke="#a8a29e"
             strokeWidth={1}
           />
         );
@@ -213,7 +212,7 @@ export function ShapeItem({ shape, isViolating }: ShapeItemProps) {
         );
 
       default:
-        return <Rect width={100} height={100} fill="#6b7280" />;
+        return <Rect width={100} height={100} fill="#78716c" />;
     }
   };
 
@@ -224,7 +223,7 @@ export function ShapeItem({ shape, isViolating }: ShapeItemProps) {
       y={shape.y}
       offsetX={shape.width / 2}
       offsetY={shape.height / 2}
-      draggable={!shape.locked}
+      draggable={isInteractive}
       onDragEnd={handleDragEnd}
       onTransformEnd={handleTransformEnd}
       onClick={handleClick}
@@ -258,15 +257,26 @@ export function ShapeItem({ shape, isViolating }: ShapeItemProps) {
           offsetY={0}
           text={`${assignedCount}/${shape.seats}`}
           fontSize={10}
-          fill="#d1d5db"
+          fill="#a8a29e"
           fontFamily="sans-serif"
           align="center"
           width={shape.width}
         />
       )}
 
+      {/* Lock indicator when shape or layer is locked */}
+      {(shape.locked || layerLocked) && (
+        <Text
+          x={shape.width / 2 - 12}
+          y={-shape.height / 2 + 2}
+          text="🔒"
+          fontSize={12}
+          fill="#ffffff"
+        />
+      )}
+
       {/* Transformer for resize/rotate when selected */}
-      {isSelected && (
+      {isSelected && isInteractive && (
         <Transformer
           ref={trRef}
           enabledAnchors={[
@@ -280,8 +290,8 @@ export function ShapeItem({ shape, isViolating }: ShapeItemProps) {
             'bottom-right',
           ]}
           rotateEnabled={true}
-          borderStroke="#ec4899"
-          anchorFill="#ec4899"
+          borderStroke="#b45309"
+          anchorFill="#b45309"
           anchorSize={8}
           borderStrokeWidth={2}
         />

@@ -12,7 +12,7 @@ export default function App() {
   const view = useEditorStore((s) => s.view);
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-gray-950">
+    <div className="flex flex-col h-screen overflow-hidden bg-stone-100">
       <Toolbar />
       <div className="flex flex-1 overflow-hidden">
         <main className="flex-1 overflow-hidden">
@@ -20,7 +20,7 @@ export default function App() {
           {view === 'guests' && <GuestsPage />}
           {view === 'rooms' && <RoomsPage />}
         </main>
-        {view === 'editor' && <Sidebar stageRef={stageRef} />}
+        <Sidebar stageRef={stageRef} />
       </div>
     </div>
   );

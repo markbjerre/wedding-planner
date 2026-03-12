@@ -1,191 +1,186 @@
 import { useEditorStore } from '../../store/editor-store';
+import type { LayerId } from '../../types';
+
+const LAYER_OPTIONS: Array<{ id: LayerId; label: string }> = [
+  { id: 'floorplan',   label: 'Floorplan' },
+  { id: 'fixed',       label: 'Fixed Items' },
+  { id: 'tables',      label: 'Tables' },
+  { id: 'decorations', label: 'Decorations' },
+];
+
+const INPUT = 'w-full px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-sm text-stone-800 focus:outline-none focus:ring-1 focus:ring-amber-400 focus:border-amber-400';
+const LABEL = 'block text-xs font-medium text-stone-500 mb-1';
 
 export function PropertiesPanel() {
-  const selectedShapeId = useEditorStore((s) => s.selectedShapeId);
-  const layout = useEditorStore((s) => s.layout);
-  const guests = useEditorStore((s) => s.layout.guests);
-
-  const updateShape = useEditorStore((s) => s.updateShape);
-  const deleteShape = useEditorStore((s) => s.deleteShape);
-  const duplicateShape = useEditorStore((s) => s.duplicateShape);
+  const selectedShapeId  = useEditorStore((s) => s.selectedShapeId);
+  const layout           = useEditorStore((s) => s.layout);
+  const guests           = useEditorStore((s) => s.layout.guests);
+  const updateShape      = useEditorStore((s) => s.updateShape);
+  const deleteShape      = useEditorStore((s) => s.deleteShape);
+  const duplicateShape   = useEditorStore((s) => s.duplicateShape);
   const moveShapeToFront = useEditorStore((s) => s.moveShapeToFront);
-  const moveShapeToBack = useEditorStore((s) => s.moveShapeToBack);
-  const selectShape = useEditorStore((s) => s.selectShape);
+  const moveShapeToBack  = useEditorStore((s) => s.moveShapeToBack);
 
-  if (!selectedShapeId) return null;
+  if (!selectedShapeId) {
+    return (
+      <div className="p-6 flex flex-col items-center justify-center text-center gap-2 text-stone-400 pt-16">
+        <div className="text-3xl">↖</div>
+        <p className="text-sm">Select a shape on the canvas to edit its properties.</p>
+      </div>
+    );
+  }
 
   const shape = layout.shapes.find((s) => s.id === selectedShapeId);
   if (!shape) return null;
 
-  const isTable =
-    shape.kind === 'round-table' || shape.kind === 'rect-table';
+  const isTable = shape.kind === 'round-table' || shape.kind === 'rect-table';
   const tableGuests = guests.filter((g) => g.tableId === shape.id);
 
   return (
     <div className="p-4 space-y-4">
-      <h3 className="text-sm font-semibold text-gray-300">Shape Properties</h3>
+      {/* Header row: label + lock toggle */}
+      <div className="flex items-start gap-2">
+        <div className="flex-1">
+          <label className={LABEL}>Label</label>
+          <input
+            type="text"
+            value={shape.label}
+            onChange={(e) => updateShape(shape.id, { label: e.target.value })}
+            className={INPUT}
+          />
+        </div>
+        <div className="pt-5">
+          <button
+            onClick={() => updateShape(shape.id, { locked: !shape.locked })}
+            className={`w-9 h-9 rounded-lg border text-base transition-all ${
+              shape.locked
+                ? 'bg-amber-100 border-amber-300 text-amber-700 shadow-sm'
+                : 'bg-white border-stone-200 text-stone-300 hover:border-stone-300 hover:text-stone-500'
+            }`}
+            title={shape.locked ? 'Locked — click to unlock' : 'Click to lock'}
+          >
+            {shape.locked ? '🔒' : '🔓'}
+          </button>
+        </div>
+      </div>
 
-      {/* Label */}
+      {/* Layer assignment */}
       <div>
-        <label className="block text-xs text-gray-400 mb-1">Label</label>
-        <input
-          type="text"
-          value={shape.label}
-          onChange={(e) => updateShape(shape.id, { label: e.target.value })}
-          className="w-full px-2 py-1 bg-gray-800 border border-gray-700 rounded text-sm text-white"
-        />
+        <label className={LABEL}>Layer</label>
+        <select
+          value={shape.layer}
+          onChange={(e) => updateShape(shape.id, { layer: e.target.value as LayerId })}
+          className={INPUT}
+        >
+          {LAYER_OPTIONS.map((l) => (
+            <option key={l.id} value={l.id}>{l.label}</option>
+          ))}
+        </select>
       </div>
 
       {/* Color */}
       <div>
-        <label className="block text-xs text-gray-400 mb-1">Color</label>
+        <label className={LABEL}>Color</label>
         <div className="flex gap-2">
           <input
             type="color"
             value={shape.color}
             onChange={(e) => updateShape(shape.id, { color: e.target.value })}
-            className="w-10 h-8 rounded cursor-pointer"
+            className="h-9 w-10 rounded-lg border border-stone-200 cursor-pointer p-0.5 bg-white"
           />
           <input
             type="text"
             value={shape.color}
             onChange={(e) => updateShape(shape.id, { color: e.target.value })}
-            className="flex-1 px-2 py-1 bg-gray-800 border border-gray-700 rounded text-sm text-white"
+            className={`${INPUT} flex-1 font-mono`}
           />
         </div>
       </div>
 
-      {/* Width */}
-      <div>
-        <label className="block text-xs text-gray-400 mb-1">Width (px)</label>
-        <input
-          type="number"
-          value={shape.width}
-          onChange={(e) =>
-            updateShape(shape.id, { width: Math.max(20, parseInt(e.target.value) || 20) })
-          }
-          className="w-full px-2 py-1 bg-gray-800 border border-gray-700 rounded text-sm text-white"
-        />
-      </div>
-
-      {/* Height */}
-      <div>
-        <label className="block text-xs text-gray-400 mb-1">Height (px)</label>
-        <input
-          type="number"
-          value={shape.height}
-          onChange={(e) =>
-            updateShape(shape.id, { height: Math.max(20, parseInt(e.target.value) || 20) })
-          }
-          className="w-full px-2 py-1 bg-gray-800 border border-gray-700 rounded text-sm text-white"
-        />
+      {/* Width / Height */}
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className={LABEL}>Width (px)</label>
+          <input type="number" value={shape.width}
+            onChange={(e) => updateShape(shape.id, { width: Math.max(20, +e.target.value || 20) })}
+            className={INPUT} />
+        </div>
+        <div>
+          <label className={LABEL}>Height (px)</label>
+          <input type="number" value={shape.height}
+            onChange={(e) => updateShape(shape.id, { height: Math.max(20, +e.target.value || 20) })}
+            className={INPUT} />
+        </div>
       </div>
 
       {/* Rotation */}
       <div>
-        <label className="block text-xs text-gray-400 mb-1">
-          Rotation (degrees)
-        </label>
+        <label className={LABEL}>Rotation — {shape.rotation}°</label>
         <input
-          type="number"
-          value={shape.rotation}
-          onChange={(e) =>
-            updateShape(shape.id, { rotation: parseInt(e.target.value) || 0 })
-          }
-          min={0}
-          max={360}
-          className="w-full px-2 py-1 bg-gray-800 border border-gray-700 rounded text-sm text-white"
+          type="range"
+          min={0} max={360} value={shape.rotation}
+          onChange={(e) => updateShape(shape.id, { rotation: +e.target.value })}
+          className="w-full accent-amber-600"
         />
       </div>
 
-      {/* Seats (for tables) */}
+      {/* Seats */}
       {isTable && (
         <div>
-          <label className="block text-xs text-gray-400 mb-1">Seats</label>
-          <input
-            type="number"
-            value={shape.seats}
-            onChange={(e) =>
-              updateShape(shape.id, { seats: Math.max(1, parseInt(e.target.value) || 1) })
-            }
-            min={1}
-            className="w-full px-2 py-1 bg-gray-800 border border-gray-700 rounded text-sm text-white"
-          />
+          <label className={LABEL}>Seats</label>
+          <input type="number" value={shape.seats} min={1}
+            onChange={(e) => updateShape(shape.id, { seats: Math.max(1, +e.target.value || 1) })}
+            className={INPUT} />
         </div>
       )}
 
-      {/* Locked checkbox */}
-      <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
-          id="locked"
-          checked={shape.locked}
-          onChange={(e) => updateShape(shape.id, { locked: e.target.checked })}
-          className="w-4 h-4 rounded"
-        />
-        <label htmlFor="locked" className="text-sm text-gray-400">
-          Locked
-        </label>
-      </div>
+      <div className="h-px bg-stone-100" />
 
-      {/* Divider */}
-      <div className="h-px bg-gray-700" />
-
-      {/* Action buttons */}
-      <div className="flex flex-col gap-2">
-        <button
-          onClick={() => duplicateShape(shape.id)}
-          className="h-8 px-3 bg-gray-700 text-gray-300 hover:bg-gray-600 rounded text-sm font-medium transition-colors"
-        >
+      {/* Actions */}
+      <div className="grid grid-cols-2 gap-2">
+        <button onClick={() => duplicateShape(shape.id)}
+          className="h-8 rounded-lg border border-stone-200 bg-white text-stone-600 hover:bg-stone-50 text-sm font-medium transition-colors">
           Duplicate
         </button>
-        <button
-          onClick={() => moveShapeToFront(shape.id)}
-          className="h-8 px-3 bg-gray-700 text-gray-300 hover:bg-gray-600 rounded text-sm font-medium transition-colors"
-        >
-          Move to Front
+        <button onClick={() => moveShapeToFront(shape.id)}
+          className="h-8 rounded-lg border border-stone-200 bg-white text-stone-600 hover:bg-stone-50 text-sm font-medium transition-colors">
+          To Front
+        </button>
+        <button onClick={() => moveShapeToBack(shape.id)}
+          className="h-8 rounded-lg border border-stone-200 bg-white text-stone-600 hover:bg-stone-50 text-sm font-medium transition-colors">
+          To Back
         </button>
         <button
-          onClick={() => moveShapeToBack(shape.id)}
-          className="h-8 px-3 bg-gray-700 text-gray-300 hover:bg-gray-600 rounded text-sm font-medium transition-colors"
-        >
-          Move to Back
-        </button>
-        <button
-          onClick={() => {
-            deleteShape(shape.id);
-            selectShape(null);
-          }}
-          className="h-8 px-3 bg-red-900 text-red-300 hover:bg-red-800 rounded text-sm font-medium transition-colors"
-        >
+          onClick={() => deleteShape(shape.id)}
+          className="h-8 rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 text-sm font-medium transition-colors">
           Delete
         </button>
       </div>
 
-      {/* Guest assignments for tables */}
-      {isTable && tableGuests.length > 0 && (
-        <>
-          <div className="h-px bg-gray-700" />
-          <div>
-            <h4 className="text-xs font-semibold text-gray-400 mb-2">
-              Assigned Guests
-            </h4>
+      {/* Table guests */}
+      {isTable && (
+        <div>
+          <div className="h-px bg-stone-100 mb-3" />
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-xs font-semibold text-stone-500 uppercase tracking-wider">Guests at this table</h4>
+            <span className="text-xs text-stone-400 bg-stone-100 rounded-full px-2 py-0.5">
+              {tableGuests.length}/{shape.seats}
+            </span>
+          </div>
+          {tableGuests.length === 0 ? (
+            <p className="text-xs text-stone-400 italic">No guests assigned yet.</p>
+          ) : (
             <div className="space-y-1">
               {tableGuests.map((guest) => (
-                <button
-                  key={guest.id}
-                  onClick={() => {
-                    // Selecting a guest is handled via the store
-                    useEditorStore.setState({ selectedGuestId: guest.id });
-                  }}
-                  className="block w-full text-left px-2 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded text-gray-300 transition-colors"
-                >
-                  {guest.name} (Seat {guest.seatNumber})
-                </button>
+                <div key={guest.id}
+                  className="flex items-center justify-between px-2.5 py-1.5 bg-white rounded-lg border border-stone-100 text-xs text-stone-700">
+                  <span>{guest.name}</span>
+                  <span className="text-stone-400">Seat {guest.seatNumber}</span>
+                </div>
               ))}
             </div>
-          </div>
-        </>
+          )}
+        </div>
       )}
     </div>
   );

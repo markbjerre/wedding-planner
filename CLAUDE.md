@@ -64,9 +64,10 @@ wedding-planner/
     │   ├── Toolbar/
     │   │   └── Toolbar.tsx          # tool buttons, zoom, view tabs, toggles
     │   └── Sidebar/
-    │       ├── Sidebar.tsx          # sidebar wrapper
-    │       ├── PropertiesPanel.tsx  # selected shape editor
-    │       └── LayoutPanel.tsx      # layout meta, stats, save/load/export
+    │       ├── Sidebar.tsx          # sidebar wrapper (3 tabs: Properties/Layers/Layout)
+    │       ├── PropertiesPanel.tsx  # selected shape editor, lock toggle, layer assignment
+    │       ├── LayersPanel.tsx      # layer visibility + lock controls
+    │       └── LayoutPanel.tsx      # layout meta (metres), save/load/export
     └── pages/
         ├── GuestsPage.tsx           # guest list tracker view
         └── RoomsPage.tsx            # sleeping room planner view
@@ -111,11 +112,28 @@ Layout is a plain JSON object (`Layout` type). Save/load via:
 - **Konva.js** over Fabric.js — React-native integration, lighter, better for shapes/transforms
 - **Zustand** over Redux/Context — minimal boilerplate, great for editor state
 - **No React Router** — view switching is store state, no URL routing needed yet
-- **Scale:** 40px = 1 metre (configurable via `layout.scale`)
+- **Scale:** 40px = 1 metre by default; configurable via `layout.scale` (px/m)
+- **Dimensions in metres:** `venueWidthM`, `venueHeightM`, `gridSizeM` — canvas px size computed as `widthM × scale`
+- **Layers:** 4 layers (`floorplan`, `fixed`, `tables`, `decorations`), each with `visible` + `locked` flags; stored in `layout.layers[]`
+- **Lock:** per-shape `shape.locked` bool + per-layer `layer.locked`; both checked before allowing drag
 
 ---
 
 ## Version History
+
+### v0.2.0 — 2026-03 (layers, lock, metric dimensions, earthy redesign)
+- **Layers system:** 4 canvas layers (Floorplan, Fixed Items, Tables, Decorations)
+  - Per-layer visibility toggle (eye icon) and lock toggle
+  - Shapes assigned to a layer via `VenueShape.layer: LayerId`
+  - `DEFAULT_LAYERS` defined in `types/index.ts`
+- **Lock function:** per-shape lock toggle in PropertiesPanel; lock indicator rendered on canvas; locked shapes non-draggable
+- **Metric dimensions:** venue size in metres (`venueWidthM`, `venueHeightM`, `gridSizeM`, `scale`)
+  - LayoutPanel updated with metre inputs + live canvas size preview
+  - GridLayer and EditorCanvas compute px dimensions from metres × scale
+- **Earthy UI redesign:** Tailwind `stone`/`amber` palette throughout; warm cream canvas (`#f5f0e8`); smooth rounded corners
+- **Sidebar tabbed interface:** Properties / Layers / Layout tabs (`SidebarTab` state in store)
+- **Toolbar:** layer selector buttons, undo/redo buttons, earthy styling
+- Build: zero TypeScript errors ✓
 
 ### v0.1.0 — 2026-03 (initial scaffold)
 - Project scaffolded: Vite + React 18 + TypeScript + Tailwind CSS 3

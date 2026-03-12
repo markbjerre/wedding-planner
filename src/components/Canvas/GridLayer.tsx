@@ -1,40 +1,36 @@
-import { Layer, Line } from 'react-konva';
+import { Layer, Line, Rect } from 'react-konva';
 import { useEditorStore } from '../../store/editor-store';
 
 export function GridLayer() {
-  const showGrid = useEditorStore((s) => s.showGrid);
-  const layout = useEditorStore((s) => s.layout);
+  const showGrid  = useEditorStore((s) => s.showGrid);
+  const layout    = useEditorStore((s) => s.layout);
+  const { venueWidthM, venueHeightM, gridSizeM, scale } = layout;
+
+  const width   = venueWidthM * scale;
+  const height  = venueHeightM * scale;
+  const gridPx  = gridSizeM * scale;
 
   if (!showGrid) return null;
 
-  const { venueWidth, venueHeight, gridSize } = layout;
-  const lines = [];
+  const verticals   = [];
+  const horizontals = [];
 
-  // Vertical lines
-  for (let x = 0; x <= venueWidth; x += gridSize) {
-    lines.push(
-      <Line
-        key={`v-${x}`}
-        points={[x, 0, x, venueHeight]}
-        stroke="#374151"
-        strokeWidth={0.5}
-        opacity={0.4}
-      />
+  for (let x = 0; x <= width; x += gridPx) {
+    verticals.push(
+      <Line key={`v-${x}`} points={[x, 0, x, height]} stroke="#d6d3d1" strokeWidth={0.5} opacity={0.6} />
+    );
+  }
+  for (let y = 0; y <= height; y += gridPx) {
+    horizontals.push(
+      <Line key={`h-${y}`} points={[0, y, width, y]} stroke="#d6d3d1" strokeWidth={0.5} opacity={0.6} />
     );
   }
 
-  // Horizontal lines
-  for (let y = 0; y <= venueHeight; y += gridSize) {
-    lines.push(
-      <Line
-        key={`h-${y}`}
-        points={[0, y, venueWidth, y]}
-        stroke="#374151"
-        strokeWidth={0.5}
-        opacity={0.4}
-      />
-    );
-  }
-
-  return <Layer>{lines}</Layer>;
+  return (
+    <Layer listening={false}>
+      <Rect x={0} y={0} width={width} height={height} fill="#f5f0e8" />
+      {verticals}
+      {horizontals}
+    </Layer>
+  );
 }
