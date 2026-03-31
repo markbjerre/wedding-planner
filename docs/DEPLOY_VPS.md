@@ -22,6 +22,16 @@ Vite bakes `VITE_*` into the JS at **build** time. On the host, set (e.g. in `/r
 
 On the shared VPS, `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` must be the **same Supabase project** (same values as Finnish / ella-mark-wedding). A mismatched anon/publishable key from another project yields **Invalid API key** in Layout → Cloud sync.
 
+### Supabase SQL migrations
+
+In the Supabase SQL editor, run in order:
+
+1. `supabase/001_wedding_planner_layouts.sql` — one layout row per user (cloud sync).
+2. `supabase/002_wedding_planner_layout_shares.sql` — shared projects (invite codes + RLS so collaborators can read/update the owner’s layout).
+3. `supabase/003_wedding_planner_profiles.sql` — display names for shared project lists (optional but recommended).
+
+Without (2), **Layout → Shared projects** will fail when generating or redeeming invites. Without (3), display names fall back to short user ids until you run the migration.
+
 ## 3. Add service to docker-compose (same file as housing/finnish)
 
 Append something like:

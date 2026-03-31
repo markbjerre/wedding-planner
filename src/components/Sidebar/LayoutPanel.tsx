@@ -4,6 +4,7 @@ import { downloadLayoutJSON, loadFromFile } from '../../lib/storage';
 import { exportToPNG, exportToPDF } from '../../lib/export';
 import { DimensionFlowPanel } from './DimensionFlowPanel';
 import { CloudSyncPanel } from './CloudSyncPanel';
+import { ShareProjectsPanel } from './ShareProjectsPanel';
 import type Konva from 'konva';
 
 interface LayoutPanelProps {
@@ -64,6 +65,7 @@ export function LayoutPanel({ stageRef }: LayoutPanelProps) {
   return (
     <div className="p-4 space-y-5">
       <CloudSyncPanel />
+      <ShareProjectsPanel />
       <DimensionFlowPanel />
 
       {/* ── Venue info ─────────────────────────────────────────────────── */}

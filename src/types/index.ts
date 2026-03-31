@@ -160,8 +160,13 @@ export type ActiveTool = 'select' | 'dimension' | ShapeKind;
 export type AppView = 'editor' | 'guests' | 'rooms';
 export type SidebarTab = 'properties' | 'layers' | 'layout';
 
+/** Which cloud project is loaded: your layout (`self`) or another user’s row you collaborate on. */
+export type CloudLayoutOwnerId = 'self' | string;
+
 export interface EditorState {
   layout: Layout;
+  /** Supabase `wedding_planner_layouts.user_id` for the layout being edited. */
+  cloudLayoutOwnerId: CloudLayoutOwnerId;
   selectedShapeId: string | null;
   selectedGuestId: string | null;
   selectedRoomId: string | null;

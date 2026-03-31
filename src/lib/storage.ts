@@ -1,22 +1,34 @@
 import type { Layout } from '../types';
 
-const STORAGE_KEY = 'wedding-planner-layout';
+const LEGACY_STORAGE_KEY = 'wedding-planner-layout';
 
-/** Persist layout to localStorage. */
-export function saveToLocalStorage(layout: Layout): void {
+function keyForOwner(ownerKey: string): string {
+  return `wedding-planner-layout:${ownerKey}`;
+}
+
+/** Persist layout to localStorage (per cloud project owner bucket). */
+export function saveToLocalStorage(layout: Layout, ownerKey: string = 'self'): void {
   try {
     if (typeof localStorage === 'undefined') return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...layout, updatedAt: new Date().toISOString() }));
+    const k = keyForOwner(ownerKey);
+    localStorage.setItem(k, JSON.stringify({ ...layout, updatedAt: new Date().toISOString() }));
   } catch {
     console.error('Failed to save layout to localStorage');
   }
 }
 
-/** Load layout from localStorage, returns null if nothing saved. */
-export function loadFromLocalStorage(): Layout | null {
+/** Load layout from localStorage for this owner bucket; migrates legacy single key once. */
+export function loadFromLocalStorage(ownerKey: string = 'self'): Layout | null {
   try {
     if (typeof localStorage === 'undefined') return null;
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const k = keyForOwner(ownerKey);
+    let raw = localStorage.getItem(k);
+    if (!raw && ownerKey === 'self') {
+      raw = localStorage.getItem(LEGACY_STORAGE_KEY);
+      if (raw) {
+        localStorage.setItem(k, raw);
+      }
+    }
     return raw ? (JSON.parse(raw) as Layout) : null;
   } catch {
     return null;

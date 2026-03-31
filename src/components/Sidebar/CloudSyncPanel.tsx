@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';
+import { getMyProfile, upsertMyDisplayName } from '../../lib/profile';
 
 const INPUT =
   'w-full px-2.5 py-1.5 bg-white border border-stone-200 rounded-lg text-sm text-stone-800 focus:outline-none focus:ring-1 focus:ring-amber-400 focus:border-amber-400';
@@ -10,6 +11,8 @@ export function CloudSyncPanel() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [sessionEmail, setSessionEmail] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState('');
+  const [displayNameDraft, setDisplayNameDraft] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -25,6 +28,25 @@ export function CloudSyncPanel() {
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!sessionEmail) {
+      setDisplayName('');
+      setDisplayNameDraft('');
+      return;
+    }
+    if (!supabase) return;
+    void supabase.auth.getSession().then(async () => {
+      try {
+        const p = await getMyProfile();
+        const v = p?.display_name?.trim() ?? '';
+        setDisplayName(v);
+        setDisplayNameDraft(v);
+      } catch {
+        /* ignore */
+      }
+    });
+  }, [sessionEmail]);
 
   if (!supabase) {
     return (
@@ -66,6 +88,20 @@ export function CloudSyncPanel() {
     if (error) setMessage(error.message);
   };
 
+  const handleSaveDisplayName = async () => {
+    setMessage(null);
+    setBusy(true);
+    try {
+      await upsertMyDisplayName(displayNameDraft);
+      setDisplayName(displayNameDraft.trim());
+      setMessage('Display name saved.');
+    } catch (e) {
+      setMessage(e instanceof Error ? e.message : 'Could not save name');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   if (sessionEmail) {
     return (
       <section className="mb-5 p-3 rounded-lg border border-emerald-200 bg-emerald-50/70">
@@ -74,6 +110,25 @@ export function CloudSyncPanel() {
         <p className="text-[11px] text-emerald-700 mb-2">
           Your layout saves to Supabase (debounced) while signed in. This device still keeps a local copy.
         </p>
+        <label className="block text-[11px] font-medium text-emerald-800 mb-1">Display name (shared projects)</label>
+        <div className="flex gap-2 mb-2">
+          <input
+            type="text"
+            placeholder="e.g. Alex"
+            value={displayNameDraft}
+            onChange={(e) => setDisplayNameDraft(e.target.value)}
+            maxLength={80}
+            className={`${INPUT} flex-1`}
+          />
+          <button
+            type="button"
+            disabled={busy || displayNameDraft.trim() === displayName}
+            onClick={() => void handleSaveDisplayName()}
+            className={`${BTN} px-3 shrink-0 border-emerald-300 bg-white text-emerald-900 hover:bg-emerald-100`}
+          >
+            Save
+          </button>
+        </div>
         <button
           type="button"
           disabled={busy}
@@ -82,6 +137,7 @@ export function CloudSyncPanel() {
         >
           Sign out
         </button>
+        {message && <p className="text-[11px] text-emerald-800 mt-2">{message}</p>}
       </section>
     );
   }

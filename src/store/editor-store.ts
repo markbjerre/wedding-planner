@@ -7,6 +7,12 @@ import { SHAPE_DEFAULT_LAYER, ALL_LAYER_IDS } from '../types';
 import { newId } from '../lib/ids';
 import { snapPosition } from '../lib/snap';
 import { loadFromLocalStorage, saveToLocalStorage } from '../lib/storage';
+import {
+  layoutStorageOwnerKey,
+  persistCloudLayoutOwner,
+  readStoredCloudLayoutOwner,
+} from '../lib/cloudLayoutOwner';
+import type { CloudLayoutOwnerId } from '../types';
 import { queueRemoteSave } from '../lib/remoteSaveQueue';
 import { SAMPLE_LAYOUT } from '../data/sample-layout';
 import {
@@ -77,16 +83,10 @@ interface EditorActions {
   /** Anchor A = venue wall (then pick edge in sidebar). */
   dimensionSelectRoomAnchor: () => void;
   selectConstraint: (constraintId: string | null) => void;
+  setCloudLayoutOwnerId: (ownerId: CloudLayoutOwnerId) => Promise<void>;
 }
 
 type StoreState = EditorState & EditorActions;
-
-function withSave(layout: Layout): Layout {
-  const updated = { ...layout, updatedAt: new Date().toISOString() };
-  saveToLocalStorage(updated);
-  queueRemoteSave();
-  return updated;
-}
 
 function pushHistoryFn(state: StoreState): Partial<StoreState> {
   const trimmed = state.history.slice(0, state.historyIndex + 1).slice(-MAX_HISTORY);
@@ -95,15 +95,26 @@ function pushHistoryFn(state: StoreState): Partial<StoreState> {
 
 /** Prefer browser localStorage so edits survive refresh and new dev/prod builds (same origin). */
 function loadInitialLayout(): Layout {
-  const saved = loadFromLocalStorage();
+  const owner = readStoredCloudLayoutOwner();
+  const saved = loadFromLocalStorage(layoutStorageOwnerKey(owner));
   if (saved) return normalizeLayout(saved);
   return normalizeLayout(SAMPLE_LAYOUT);
 }
 
 const INITIAL_LAYOUT = loadInitialLayout();
+const initialCloudOwner = readStoredCloudLayoutOwner();
 
-export const useEditorStore = create<StoreState>((set, get) => ({
+export const useEditorStore = create<StoreState>((set, get) => {
+  const withSave = (layout: Layout): Layout => {
+    const updated = { ...layout, updatedAt: new Date().toISOString() };
+    saveToLocalStorage(updated, layoutStorageOwnerKey(get().cloudLayoutOwnerId));
+    queueRemoteSave();
+    return updated;
+  };
+
+  return {
   layout: INITIAL_LAYOUT,
+  cloudLayoutOwnerId: initialCloudOwner,
   selectedShapeId: null,
   selectedGuestId: null,
   selectedRoomId: null,
@@ -474,4 +485,58 @@ export const useEditorStore = create<StoreState>((set, get) => ({
       if (s.historyIndex >= s.history.length - 1) return {};
       return { layout: withSave(s.history[s.historyIndex + 1]), historyIndex: s.historyIndex + 1 };
     }),
-}));
+
+  setCloudLayoutOwnerId: async (ownerId) => {
+    const { flushRemoteSave } = await import('../lib/remoteSaveQueue');
+    const { fetchRemoteLayout, shareExists } = await import('../lib/remoteLayout');
+    const { supabase } = await import('../lib/supabaseClient');
+    await flushRemoteSave();
+    const normalized: CloudLayoutOwnerId = ownerId === 'self' ? 'self' : ownerId;
+    if (get().cloudLayoutOwnerId === normalized) return;
+    const session = await supabase?.auth.getSession();
+    const uid = session?.data.session?.user?.id;
+    if (!uid) return;
+    if (normalized !== 'self') {
+      const ok = await shareExists(normalized, uid);
+      if (!ok) {
+        persistCloudLayoutOwner('self');
+        set({ cloudLayoutOwnerId: 'self' });
+        try {
+          const remote = await fetchRemoteLayout(uid);
+          const local = loadFromLocalStorage(layoutStorageOwnerKey('self'));
+          if (!remote) {
+            get().setLayout(local ? normalizeLayout(local) : normalizeLayout(SAMPLE_LAYOUT));
+            return;
+          }
+          const remoteMs = new Date(remote.updatedAt).getTime();
+          const localMs = local ? new Date(local.updatedAt).getTime() : 0;
+          get().setLayout(
+            normalizeLayout(remoteMs >= localMs ? remote.layout : local ?? remote.layout)
+          );
+        } catch (e) {
+          console.error('Cloud layout reload failed', e);
+        }
+        return;
+      }
+    }
+    persistCloudLayoutOwner(normalized);
+    set({ cloudLayoutOwnerId: normalized });
+    const remoteOwnerUuid = normalized === 'self' ? uid : normalized;
+    try {
+      const remote = await fetchRemoteLayout(remoteOwnerUuid);
+      const local = loadFromLocalStorage(layoutStorageOwnerKey(normalized));
+      if (!remote) {
+        get().setLayout(local ? normalizeLayout(local) : normalizeLayout(SAMPLE_LAYOUT));
+        return;
+      }
+      const remoteMs = new Date(remote.updatedAt).getTime();
+      const localMs = local ? new Date(local.updatedAt).getTime() : 0;
+      get().setLayout(
+        normalizeLayout(remoteMs >= localMs ? remote.layout : local ?? remote.layout)
+      );
+    } catch (e) {
+      console.error('Cloud layout switch failed', e);
+    }
+  },
+};
+});

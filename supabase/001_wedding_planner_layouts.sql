@@ -1,5 +1,6 @@
 -- Run in Supabase SQL Editor (Dashboard → SQL → New query).
 -- Last verified: 2026-03
+-- After this, run 002_wedding_planner_layout_shares.sql for multi-user sharing.
 
 create table if not exists public.wedding_planner_layouts (
   user_id uuid primary key references auth.users (id) on delete cascade,
