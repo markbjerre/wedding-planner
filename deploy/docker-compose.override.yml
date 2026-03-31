@@ -9,7 +9,10 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
-        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
+        # Must match the same Supabase project as VITE_SUPABASE_URL. On ai-vaerksted VPS,
+        # use VITE_SUPABASE_PUBLISHABLE_KEY (same as Finnish / ella-mark-wedding), not a
+        # separate VITE_SUPABASE_ANON_KEY from another project — mismatched keys cause "Invalid API key".
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
     image: ai-vaerksted-wedding-planner:latest
     container_name: ai-vaerksted-wedding-planner
     restart: unless-stopped

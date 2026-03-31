@@ -18,9 +18,9 @@ git clone https://github.com/markbjerre/wedding-planner.git
 Vite bakes `VITE_*` into the JS at **build** time. On the host, set (e.g. in `/root/.env` next to compose, or CI secrets):
 
 - `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
+- `VITE_SUPABASE_PUBLISHABLE_KEY` (passed into the image as `VITE_SUPABASE_ANON_KEY` at build time)
 
-Use the same Supabase project as local, or a dedicated prod project.
+On the shared VPS, `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` must be the **same Supabase project** (same values as Finnish / ella-mark-wedding). A mismatched anon/publishable key from another project yields **Invalid API key** in Layout → Cloud sync.
 
 ## 3. Add service to docker-compose (same file as housing/finnish)
 
@@ -33,7 +33,7 @@ Append something like:
       dockerfile: Dockerfile
       args:
         VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
-        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
     image: ai-vaerksted-wedding-planner:latest
     container_name: ai-vaerksted-wedding-planner
     restart: unless-stopped
