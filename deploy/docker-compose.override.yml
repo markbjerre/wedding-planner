@@ -1,0 +1,24 @@
+# Merge with /root/docker-compose.yml:
+#   docker compose -f docker-compose.yml -f docker-compose.wedding-planner.yml up -d ai-vaerksted-wedding-planner
+# Copy this file to /root/docker-compose.wedding-planner.yml on the VPS.
+
+services:
+  ai-vaerksted-wedding-planner:
+    build:
+      context: /opt/ai-vaerksted/wedding-planner
+      dockerfile: Dockerfile
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
+    image: ai-vaerksted-wedding-planner:latest
+    container_name: ai-vaerksted-wedding-planner
+    restart: unless-stopped
+    networks:
+      - default
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.wedding-planner.rule=Host(`ai-vaerksted.cloud`) && PathPrefix(`/wedding-planner`)
+      - traefik.http.routers.wedding-planner.entrypoints=websecure
+      - traefik.http.routers.wedding-planner.tls.certresolver=mytlschallenge
+      - traefik.http.routers.wedding-planner.priority=100
+      - traefik.http.services.wedding-planner.loadbalancer.server.port=80
