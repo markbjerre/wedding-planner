@@ -2,6 +2,12 @@
 
 **Last updated:** 2026-03
 
+## Workspace (Code Projects)
+
+This repo is cloned at **`Code Projects/wedding-planner/`** on the dev machine. On Windows, use Node/npm directly (no `nvm` required): `npm install`, `npm run dev` → http://localhost:5173. The `source ~/.nvm/nvm.sh` lines below are for Linux/homelab shells.
+
+---
+
 ## Type
 Frontend-only SPA — 2D wedding venue layout editor + guest list tracker + room planner.
 React 18 + TypeScript + Vite + Konva.js + Zustand + Tailwind CSS 3.
@@ -94,6 +100,7 @@ wedding-planner/
 ### State (Zustand — `src/store/editor-store.ts`)
 - Single store holds `layout`, selection, viewport, history, view
 - All mutations call `saveToLocalStorage` automatically (auto-persist)
+- Optional **Supabase** cloud sync: set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`, run `supabase/001_wedding_planner_layouts.sql`, sign in via Layout → Cloud sync; debounced upsert while logged in
 - Undo/redo stack capped at 50 snapshots
 
 ### Shape kinds
@@ -103,12 +110,13 @@ wedding-planner/
 Layout is a plain JSON object (`Layout` type). Save/load via:
 - Browser localStorage (auto)
 - JSON file download/upload
+- Supabase row per auth user (optional)
 - PNG/PDF export of the canvas
 
 ---
 
 ## Key Design Decisions
-- **Frontend-only** — no backend; add FastAPI + PostgreSQL later if persistence across devices is needed
+- **Frontend-only** by default; **optional Supabase** (Postgres + Auth) for deployed cross-device persistence without running your own API
 - **Konva.js** over Fabric.js — React-native integration, lighter, better for shapes/transforms
 - **Zustand** over Redux/Context — minimal boilerplate, great for editor state
 - **No React Router** — view switching is store state, no URL routing needed yet
@@ -120,6 +128,14 @@ Layout is a plain JSON object (`Layout` type). Save/load via:
 ---
 
 ## Version History
+
+### v0.3.0 — 2026-03 (Fusion-style dimension lock)
+- **Edge distance constraints:** `Layout.constraints[]` — gap in metres between axis-aligned edges of two shapes (rotation ignored; same AABB convention as `spacing.ts`).
+- **Anchor A / driven B:** Shape B moves to satisfy the gap when anchor A moves or after apply; locked shapes or locked layers skip driving B.
+- **Valid edge pairs:** horizontal `east↔west`, vertical `south↔north`.
+- **Toolbar:** Dimension tool (⊕); **Layout** sidebar: wizard (pick A → edge → B → edge → gap in m) + list/remove locks; **Escape** or empty canvas click resets wizard step.
+- **Canvas:** dashed amber constraint lines + label; Konva `ConstraintOverlay` (non-interactive).
+- **Code:** `src/lib/constraints.ts` (geometry + satisfy), `DimensionFlowPanel.tsx`, `ConstraintOverlay.tsx`.
 
 ### v0.2.0 — 2026-03 (layers, lock, metric dimensions, earthy redesign)
 - **Layers system:** 4 canvas layers (Floorplan, Fixed Items, Tables, Decorations)

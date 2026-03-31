@@ -1,6 +1,9 @@
+import { useState, useEffect } from 'react';
 import { useEditorStore } from '../../store/editor-store';
 import { downloadLayoutJSON, loadFromFile } from '../../lib/storage';
 import { exportToPNG, exportToPDF } from '../../lib/export';
+import { DimensionFlowPanel } from './DimensionFlowPanel';
+import { CloudSyncPanel } from './CloudSyncPanel';
 import type Konva from 'konva';
 
 interface LayoutPanelProps {
@@ -12,6 +15,17 @@ const LABEL = 'block text-xs font-medium text-stone-500 mb-1';
 const BTN_PRIMARY = 'w-full h-9 rounded-lg border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 text-sm font-medium transition-colors';
 const BTN_SECONDARY = 'w-full h-9 rounded-lg border border-stone-200 bg-white text-stone-600 hover:bg-stone-50 text-sm font-medium transition-colors';
 
+function numDraftInvalid(
+  raw: string | null,
+  min: number,
+  max: number
+): boolean {
+  if (raw === null || raw.trim() === '') return false;
+  const n = parseFloat(raw.replace(',', '.'));
+  if (Number.isNaN(n)) return true;
+  return n < min || n > max;
+}
+
 export function LayoutPanel({ stageRef }: LayoutPanelProps) {
   const layout           = useEditorStore((s) => s.layout);
   const guests           = useEditorStore((s) => s.layout.guests);
@@ -19,6 +33,17 @@ export function LayoutPanel({ stageRef }: LayoutPanelProps) {
   const rooms            = useEditorStore((s) => s.layout.rooms);
   const updateLayoutMeta = useEditorStore((s) => s.updateLayoutMeta);
   const setLayout        = useEditorStore((s) => s.setLayout);
+
+  const [venueWDraft, setVenueWDraft] = useState<string | null>(null);
+  const [venueHDraft, setVenueHDraft] = useState<string | null>(null);
+  const [gridDraft, setGridDraft] = useState<string | null>(null);
+  const [scaleDraft, setScaleDraft] = useState<string | null>(null);
+  useEffect(() => {
+    setVenueWDraft(null);
+    setVenueHDraft(null);
+    setGridDraft(null);
+    setScaleDraft(null);
+  }, [layout.id]);
 
   const handleLoadJSON = async () => {
     try { setLayout(await loadFromFile()); } catch (e) { console.error(e); }
@@ -38,6 +63,8 @@ export function LayoutPanel({ stageRef }: LayoutPanelProps) {
 
   return (
     <div className="p-4 space-y-5">
+      <CloudSyncPanel />
+      <DimensionFlowPanel />
 
       {/* ── Venue info ─────────────────────────────────────────────────── */}
       <section>
@@ -65,29 +92,97 @@ export function LayoutPanel({ stageRef }: LayoutPanelProps) {
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div>
             <label className={LABEL}>Width (m)</label>
-            <input type="number" value={layout.venueWidthM} min={4} max={200}
-              onChange={(e) => updateLayoutMeta({ venueWidthM: Math.max(4, +e.target.value || 20) })}
-              className={INPUT} />
+            <input
+              type="text"
+              inputMode="decimal"
+              value={venueWDraft ?? String(layout.venueWidthM)}
+              onFocus={() => setVenueWDraft(String(layout.venueWidthM))}
+              onChange={(e) => {
+                const v = e.target.value;
+                setVenueWDraft(v);
+                const n = parseFloat(v.replace(',', '.'));
+                if (!Number.isNaN(n) && n >= 4 && n <= 200) {
+                  updateLayoutMeta({ venueWidthM: n });
+                }
+              }}
+              onBlur={() => setVenueWDraft(null)}
+              className={`${INPUT}${
+                numDraftInvalid(venueWDraft, 4, 200)
+                  ? ' border-red-500 ring-1 ring-red-200'
+                  : ''
+              }`}
+            />
           </div>
           <div>
             <label className={LABEL}>Height (m)</label>
-            <input type="number" value={layout.venueHeightM} min={4} max={200}
-              onChange={(e) => updateLayoutMeta({ venueHeightM: Math.max(4, +e.target.value || 20) })}
-              className={INPUT} />
+            <input
+              type="text"
+              inputMode="decimal"
+              value={venueHDraft ?? String(layout.venueHeightM)}
+              onFocus={() => setVenueHDraft(String(layout.venueHeightM))}
+              onChange={(e) => {
+                const v = e.target.value;
+                setVenueHDraft(v);
+                const n = parseFloat(v.replace(',', '.'));
+                if (!Number.isNaN(n) && n >= 4 && n <= 200) {
+                  updateLayoutMeta({ venueHeightM: n });
+                }
+              }}
+              onBlur={() => setVenueHDraft(null)}
+              className={`${INPUT}${
+                numDraftInvalid(venueHDraft, 4, 200)
+                  ? ' border-red-500 ring-1 ring-red-200'
+                  : ''
+              }`}
+            />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className={LABEL}>Grid (m)</label>
-            <input type="number" value={layout.gridSizeM} min={0.25} max={5} step={0.25}
-              onChange={(e) => updateLayoutMeta({ gridSizeM: Math.max(0.25, +e.target.value || 1) })}
-              className={INPUT} />
+            <input
+              type="text"
+              inputMode="decimal"
+              value={gridDraft ?? String(layout.gridSizeM)}
+              onFocus={() => setGridDraft(String(layout.gridSizeM))}
+              onChange={(e) => {
+                const v = e.target.value;
+                setGridDraft(v);
+                const n = parseFloat(v.replace(',', '.'));
+                if (!Number.isNaN(n) && n >= 0.25 && n <= 5) {
+                  updateLayoutMeta({ gridSizeM: n });
+                }
+              }}
+              onBlur={() => setGridDraft(null)}
+              className={`${INPUT}${
+                numDraftInvalid(gridDraft, 0.25, 5)
+                  ? ' border-red-500 ring-1 ring-red-200'
+                  : ''
+              }`}
+            />
           </div>
           <div>
             <label className={LABEL}>Scale (px/m)</label>
-            <input type="number" value={layout.scale} min={10} max={200}
-              onChange={(e) => updateLayoutMeta({ scale: Math.max(10, +e.target.value || 40) })}
-              className={INPUT} />
+            <input
+              type="text"
+              inputMode="decimal"
+              value={scaleDraft ?? String(layout.scale)}
+              onFocus={() => setScaleDraft(String(layout.scale))}
+              onChange={(e) => {
+                const v = e.target.value;
+                setScaleDraft(v);
+                const n = parseFloat(v.replace(',', '.'));
+                if (!Number.isNaN(n) && n >= 10 && n <= 200) {
+                  updateLayoutMeta({ scale: n });
+                }
+              }}
+              onBlur={() => setScaleDraft(null)}
+              className={`${INPUT}${
+                numDraftInvalid(scaleDraft, 10, 200)
+                  ? ' border-red-500 ring-1 ring-red-200'
+                  : ''
+              }`}
+            />
           </div>
         </div>
         <div className="mt-2 px-2.5 py-2 bg-stone-100 rounded-lg text-xs text-stone-500">

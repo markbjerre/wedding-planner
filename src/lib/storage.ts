@@ -5,6 +5,7 @@ const STORAGE_KEY = 'wedding-planner-layout';
 /** Persist layout to localStorage. */
 export function saveToLocalStorage(layout: Layout): void {
   try {
+    if (typeof localStorage === 'undefined') return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...layout, updatedAt: new Date().toISOString() }));
   } catch {
     console.error('Failed to save layout to localStorage');
@@ -14,6 +15,7 @@ export function saveToLocalStorage(layout: Layout): void {
 /** Load layout from localStorage, returns null if nothing saved. */
 export function loadFromLocalStorage(): Layout | null {
   try {
+    if (typeof localStorage === 'undefined') return null;
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? (JSON.parse(raw) as Layout) : null;
   } catch {

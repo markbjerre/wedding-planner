@@ -2,15 +2,10 @@ import { useCallback } from 'react';
 import { useEditorStore } from '../../store/editor-store';
 import type { ActiveTool, AppView, LayerId } from '../../types';
 
-const TOOLS: Array<{ id: ActiveTool; label: string; icon: string }> = [
-  { id: 'select',       label: 'Select',      icon: '↖' },
-  { id: 'round-table',  label: 'Round Table', icon: '◯' },
-  { id: 'rect-table',   label: 'Rect Table',  icon: '▭' },
-  { id: 'chair',        label: 'Chair',       icon: '⊡' },
-  { id: 'stage',        label: 'Stage',       icon: '▬' },
-  { id: 'dance-floor',  label: 'Dance Floor', icon: '◈' },
-  { id: 'zone',         label: 'Zone',        icon: '⬜' },
-  { id: 'decoration',   label: 'Decoration',  icon: '✦' },
+/** Primary tools only — shape placement lives in the right-hand Tool palette (editor). */
+const PRIMARY_TOOLS: Array<{ id: ActiveTool; label: string; icon: string }> = [
+  { id: 'select', label: 'Select', icon: '↖' },
+  { id: 'dimension', label: 'Dimension', icon: '⊕' },
 ];
 
 const LAYER_LABELS: Record<LayerId, string> = {
@@ -28,9 +23,11 @@ export function Toolbar() {
   const showDistances = useEditorStore((s) => s.showDistances);
   const view        = useEditorStore((s) => s.view);
   const activeLayerId = useEditorStore((s) => s.activeLayerId);
+  const canvasLayerFilterIds = useEditorStore((s) => s.canvasLayerFilterIds);
   const layers      = useEditorStore((s) => s.layout.layers);
 
   const setActiveTool   = useEditorStore((s) => s.setActiveTool);
+  const toggleCanvasLayerFilter = useEditorStore((s) => s.toggleCanvasLayerFilter);
   const setZoom         = useEditorStore((s) => s.setZoom);
   const setPan          = useEditorStore((s) => s.setPan);
   const toggleGrid      = useEditorStore((s) => s.toggleGrid);
@@ -59,38 +56,53 @@ export function Toolbar() {
         </div>
         <div className="h-5 w-px bg-stone-200" />
 
-        {/* Shape tools */}
+        {/* Select + Dimension — place shapes from the palette beside the canvas */}
         <div className="flex gap-1">
-          {TOOLS.map((tool) => (
+          {PRIMARY_TOOLS.map((tool) => (
             <button
               key={tool.id}
               onClick={() => setActiveTool(tool.id)}
               className={`${BASE_BTN} ${activeTool === tool.id ? ACTIVE_BTN : IDLE_BTN}`}
-              title={tool.label}
+              title={tool.id === 'dimension' ? 'Dimension lock — edge distance (Fusion-style)' : tool.label}
             >
               {tool.icon}
             </button>
           ))}
         </div>
+        {view === 'editor' && (
+          <span className="text-[11px] text-stone-400 max-w-[11rem] leading-snug hidden xl:inline">
+            Shapes: use the <strong className="text-stone-500 font-medium">Place</strong> panel →
+          </span>
+        )}
       </div>
 
-      {/* Active layer selector */}
+      {/* Active layer (placement) + canvas filter (Alt+click toggles) */}
       <div className="flex items-center gap-1 shrink-0">
         <span className="text-xs text-stone-400 mr-1">Layer:</span>
-        {layers.map((layer) => (
-          <button
-            key={layer.id}
-            onClick={() => setActiveLayer(layer.id)}
-            className={`h-7 px-2 rounded-md text-xs font-medium transition-colors border ${
-              activeLayerId === layer.id
-                ? 'bg-amber-100 text-amber-800 border-amber-300'
-                : 'bg-stone-50 text-stone-400 border-stone-200 hover:bg-stone-100'
-            }`}
-            title={`Active layer: ${layer.name}`}
-          >
-            {LAYER_LABELS[layer.id]}
-          </button>
-        ))}
+        {layers.map((layer) => {
+          const inFilter = canvasLayerFilterIds.includes(layer.id);
+          return (
+            <button
+              key={layer.id}
+              onClick={(e) => {
+                if (e.altKey) {
+                  e.preventDefault();
+                  toggleCanvasLayerFilter(layer.id);
+                } else {
+                  setActiveLayer(layer.id);
+                }
+              }}
+              className={`h-7 px-2 rounded-md text-xs font-medium transition-colors border ${
+                activeLayerId === layer.id
+                  ? 'bg-amber-100 text-amber-800 border-amber-300'
+                  : 'bg-stone-50 text-stone-400 border-stone-200 hover:bg-stone-100'
+              } ${!inFilter ? 'opacity-40 line-through' : ''}`}
+              title={`${layer.name} — click: active for new shapes · Alt+click: toggle canvas filter`}
+            >
+              {LAYER_LABELS[layer.id]}
+            </button>
+          );
+        })}
       </div>
 
       {/* Zoom */}

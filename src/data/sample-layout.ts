@@ -13,6 +13,7 @@ export const SAMPLE_LAYOUT: Layout = {
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   layers: DEFAULT_LAYERS,
+  constraints: [],
   shapes: [
     { id: 'stage-1', kind: 'stage', layer: 'fixed', x: 480, y: 80, width: 480, height: 100, rotation: 0, label: 'Stage', color: '#57534e', seats: 0, locked: true, zIndex: 0 },
     { id: 'dance-1', kind: 'dance-floor', layer: 'fixed', x: 480, y: 240, width: 360, height: 280, rotation: 0, label: 'Dance Floor', color: '#1c4966', seats: 0, locked: false, zIndex: 1 },

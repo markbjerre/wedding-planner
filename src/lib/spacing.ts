@@ -1,21 +1,12 @@
 import type { VenueShape } from '../types';
+import { shapeBbox } from './constraints';
 
 export const MIN_SPACING_PX = 20; // minimum gap between shapes in pixels
 
-/** Axis-aligned bounding box for a shape (ignores rotation for simplicity). */
-function bbox(s: VenueShape) {
-  return {
-    left: s.x - s.width / 2,
-    right: s.x + s.width / 2,
-    top: s.y - s.height / 2,
-    bottom: s.y + s.height / 2,
-  };
-}
-
 /** Gap between two AABBs (negative means overlap). */
 export function shapesGapPx(a: VenueShape, b: VenueShape): number {
-  const ba = bbox(a);
-  const bb = bbox(b);
+  const ba = shapeBbox(a);
+  const bb = shapeBbox(b);
   const gapX = Math.max(ba.left, bb.left) - Math.min(ba.right, bb.right);
   const gapY = Math.max(ba.top, bb.top) - Math.min(ba.bottom, bb.bottom);
   // If they overlap on one axis, the gap on the other axis is what matters

@@ -1,14 +1,16 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 import {
   Group,
   Circle,
   Rect,
   Text,
+  Line,
   RegularPolygon,
   Transformer,
 } from 'react-konva';
 import { useEditorStore } from '../../store/editor-store';
 import { snapPosition } from '../../lib/snap';
+import { drivenAxesLocked } from '../../lib/constraints';
 import type { VenueShape } from '../../types';
 import type Konva from 'konva';
 
@@ -26,9 +28,15 @@ export function ShapeItem({ shape, isViolating, layerLocked }: ShapeItemProps) {
 
   const updateShape = useEditorStore((s) => s.updateShape);
   const selectShape = useEditorStore((s) => s.selectShape);
+  const activeTool = useEditorStore((s) => s.activeTool);
+  const dimensionTapShape = useEditorStore((s) => s.dimensionTapShape);
 
   const shapeRef = useRef<Konva.Group>(null);
   const trRef = useRef<Konva.Transformer>(null);
+  const dragOriginRef = useRef({ x: shape.x, y: shape.y });
+
+  const constraints = layout.constraints ?? [];
+  const { lockX, lockY } = drivenAxesLocked(shape.id, constraints);
 
   const isSelected = selectedShapeId === shape.id;
   const isInteractive = !shape.locked && !layerLocked;
@@ -41,18 +49,40 @@ export function ShapeItem({ shape, isViolating, layerLocked }: ShapeItemProps) {
     }
   }, [isSelected]);
 
+  const handleDragStart = useCallback(() => {
+    dragOriginRef.current = { x: shape.x, y: shape.y };
+  }, [shape.x, shape.y]);
+
+  const dragBoundFunc = useCallback(
+    (pos: { x: number; y: number }) => ({
+      x: lockX ? dragOriginRef.current.x : pos.x,
+      y: lockY ? dragOriginRef.current.y : pos.y,
+    }),
+    [lockX, lockY]
+  );
+
   const handleDragEnd = (e: Konva.KonvaEventObject<DragEvent>) => {
     let x = e.target.x();
     let y = e.target.y();
+    if (lockX) x = dragOriginRef.current.x;
+    if (lockY) y = dragOriginRef.current.y;
 
     const gridSizeM = layout.gridSizeM;
     const scale = layout.scale;
     const gridSize = gridSizeM * scale;
 
     if (snapToGrid) {
-      const snapped = snapPosition(x, y, gridSize);
-      x = snapped.x;
-      y = snapped.y;
+      if (!lockX && !lockY) {
+        const snapped = snapPosition(x, y, gridSize);
+        x = snapped.x;
+        y = snapped.y;
+      } else if (lockX && !lockY) {
+        const snapped = snapPosition(x, y, gridSize);
+        y = snapped.y;
+      } else if (!lockX && lockY) {
+        const snapped = snapPosition(x, y, gridSize);
+        x = snapped.x;
+      }
       e.target.position({ x, y });
     }
 
@@ -66,9 +96,12 @@ export function ShapeItem({ shape, isViolating, layerLocked }: ShapeItemProps) {
     const scaleX = node.scaleX();
     const scaleY = node.scaleY();
 
-    const x = node.x();
-    const y = node.y();
+    let x = node.x();
+    let y = node.y();
     const rotation = node.rotation();
+
+    if (lockX) x = shape.x;
+    if (lockY) y = shape.y;
 
     const newWidth = shape.width * scaleX;
     const newHeight = shape.height * scaleY;
@@ -85,12 +118,36 @@ export function ShapeItem({ shape, isViolating, layerLocked }: ShapeItemProps) {
     });
   };
 
-  const handleClick = () => {
+  const handleClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    e.cancelBubble = true;
+    if (activeTool === 'dimension') {
+      dimensionTapShape(shape.id);
+      return;
+    }
     selectShape(shape.id);
   };
 
   const assignedGuests = guests.filter((g) => g.tableId === shape.id);
   const assignedCount = assignedGuests.length;
+  const sortedBySeat = [...assignedGuests].sort(
+    (a, b) => (a.seatNumber ?? 0) - (b.seatNumber ?? 0)
+  );
+  const maxNameLines = 6;
+  const truncateName = (s: string, max: number) =>
+    s.length <= max ? s : `${s.slice(0, Math.max(0, max - 1))}…`;
+  const nameLines = sortedBySeat.slice(0, maxNameLines).map((g) =>
+    truncateName(g.name, 16)
+  );
+  if (sortedBySeat.length > maxNameLines) {
+    nameLines.push(`+${sortedBySeat.length - maxNameLines} more`);
+  }
+  const guestNamesText = nameLines.join('\n');
+  /** Round table + round pillar share centred-circle layout for labels / lock. */
+  const isRoundLayout =
+    shape.kind === 'round-table' || shape.kind === 'pillar';
+  const roundRadius = isRoundLayout
+    ? Math.min(shape.width, shape.height) / 2
+    : 0;
 
   const renderPrimitive = () => {
     const baseProps = {
@@ -101,7 +158,8 @@ export function ShapeItem({ shape, isViolating, layerLocked }: ShapeItemProps) {
 
     switch (shape.kind) {
       case 'round-table': {
-        const radius = shape.width / 2;
+        // Circle matches min dimension so seats sit on the visible rim (width/height can differ slightly).
+        const radius = Math.min(shape.width, shape.height) / 2;
         return (
           <>
             <Circle radius={radius} {...baseProps} />
@@ -125,6 +183,7 @@ export function ShapeItem({ shape, isViolating, layerLocked }: ShapeItemProps) {
       }
 
       case 'rect-table': {
+        // Rect is top-left (0,0); group offset places shape centre at world x,y — seats must use same space.
         return (
           <>
             <Rect
@@ -138,8 +197,8 @@ export function ShapeItem({ shape, isViolating, layerLocked }: ShapeItemProps) {
               const sideIndex = i % seatsPerSide;
               const spacing = shape.width / (seatsPerSide + 1);
 
-              const cx = -shape.width / 2 + (sideIndex + 1) * spacing;
-              const cy = isTop ? -shape.height / 2 - 14 : shape.height / 2 + 14;
+              const cx = (sideIndex + 1) * spacing;
+              const cy = isTop ? -14 : shape.height + 14;
 
               return (
                 <Circle
@@ -211,6 +270,70 @@ export function ShapeItem({ shape, isViolating, layerLocked }: ShapeItemProps) {
           />
         );
 
+      case 'wall':
+        return (
+          <Rect
+            width={shape.width}
+            height={shape.height}
+            fill={shape.color}
+            stroke="#334155"
+            strokeWidth={2}
+          />
+        );
+
+      case 'pillar': {
+        const r = Math.min(shape.width, shape.height) / 2;
+        return (
+          <Circle
+            radius={r}
+            fill={shape.color}
+            stroke={isViolating ? '#ef4444' : '#1e293b'}
+            strokeWidth={isViolating ? 3 : 2}
+          />
+        );
+      }
+
+      case 'door': {
+        const w = shape.width;
+        const h = shape.height;
+        return (
+          <Group>
+            <Rect
+              width={w}
+              height={h}
+              fill={shape.color}
+              stroke="#78350f"
+              strokeWidth={2}
+              cornerRadius={3}
+            />
+            <Line
+              points={[w * 0.82, h * 0.12, w * 0.82, h * 0.88]}
+              stroke="#fde68a"
+              strokeWidth={Math.max(1.5, Math.min(w, h) * 0.04)}
+              lineCap="round"
+            />
+            <Circle
+              x={w * 0.74}
+              y={h * 0.5}
+              radius={Math.max(2, Math.min(w, h) * 0.035)}
+              fill="#fde68a"
+            />
+          </Group>
+        );
+      }
+
+      case 'item':
+        return (
+          <Rect
+            width={shape.width}
+            height={shape.height}
+            fill={shape.color}
+            stroke="#64748b"
+            strokeWidth={1}
+            dash={[8, 5]}
+          />
+        );
+
       default:
         return <Rect width={100} height={100} fill="#78716c" />;
     }
@@ -224,6 +347,8 @@ export function ShapeItem({ shape, isViolating, layerLocked }: ShapeItemProps) {
       offsetX={shape.width / 2}
       offsetY={shape.height / 2}
       draggable={isInteractive}
+      dragBoundFunc={isInteractive && (lockX || lockY) ? dragBoundFunc : undefined}
+      onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onTransformEnd={handleTransformEnd}
       onClick={handleClick}
@@ -234,8 +359,8 @@ export function ShapeItem({ shape, isViolating, layerLocked }: ShapeItemProps) {
 
       {/* Label text */}
       <Text
-        x={0}
-        y={0}
+        x={isRoundLayout ? -roundRadius : 0}
+        y={isRoundLayout ? -roundRadius + 4 : 0}
         offsetX={0}
         offsetY={0}
         text={shape.label}
@@ -243,16 +368,47 @@ export function ShapeItem({ shape, isViolating, layerLocked }: ShapeItemProps) {
         fill="white"
         fontFamily="sans-serif"
         align="center"
-        verticalAlign="middle"
-        width={shape.width}
-        height={30}
+        verticalAlign="top"
+        width={isRoundLayout ? roundRadius * 2 : shape.width}
+        height={28}
       />
+
+      {/* Guest names (serif, on-table) */}
+      {(shape.kind === 'round-table' || shape.kind === 'rect-table') &&
+        guestNamesText.length > 0 && (
+          <Text
+            x={shape.kind === 'round-table' ? -roundRadius : 0}
+            y={
+              shape.kind === 'round-table'
+                ? -roundRadius * 0.35
+                : Math.min(40, shape.height * 0.22)
+            }
+            width={
+              shape.kind === 'round-table' ? roundRadius * 2 : shape.width
+            }
+            text={guestNamesText}
+            fontSize={11}
+            lineHeight={1.35}
+            fill="#fef3c7"
+            fontFamily="Cormorant Garamond, Georgia, serif"
+            fontStyle="italic"
+            align="center"
+            shadowColor="rgba(0,0,0,0.45)"
+            shadowBlur={5}
+            shadowOffsetX={0}
+            shadowOffsetY={1}
+          />
+        )}
 
       {/* Guest count for tables */}
       {(shape.kind === 'round-table' || shape.kind === 'rect-table') && (
         <Text
-          x={0}
-          y={20}
+          x={shape.kind === 'round-table' ? -roundRadius : 0}
+          y={
+            shape.kind === 'round-table'
+              ? roundRadius - 22
+              : Math.max(shape.height - 20, 36)
+          }
           offsetX={0}
           offsetY={0}
           text={`${assignedCount}/${shape.seats}`}
@@ -260,23 +416,33 @@ export function ShapeItem({ shape, isViolating, layerLocked }: ShapeItemProps) {
           fill="#a8a29e"
           fontFamily="sans-serif"
           align="center"
-          width={shape.width}
+          width={
+            shape.kind === 'round-table' ? roundRadius * 2 : shape.width
+          }
         />
       )}
 
       {/* Lock indicator when shape or layer is locked */}
       {(shape.locked || layerLocked) && (
         <Text
-          x={shape.width / 2 - 12}
-          y={-shape.height / 2 + 2}
+          x={
+            isRoundLayout
+              ? roundRadius - 14
+              : shape.width - 22
+          }
+          y={
+            isRoundLayout
+              ? -roundRadius + 4
+              : 4
+          }
           text="🔒"
           fontSize={12}
           fill="#ffffff"
         />
       )}
 
-      {/* Transformer for resize/rotate when selected */}
-      {isSelected && isInteractive && (
+      {/* Transformer for resize/rotate when selected (not in Dimension tool) */}
+      {isSelected && isInteractive && activeTool === 'select' && (
         <Transformer
           ref={trRef}
           enabledAnchors={[

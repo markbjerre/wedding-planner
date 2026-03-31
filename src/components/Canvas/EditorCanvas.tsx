@@ -1,8 +1,9 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, useState } from 'react';
 import { Stage, Layer, Rect } from 'react-konva';
 import { useEditorStore } from '../../store/editor-store';
 import { GridLayer } from './GridLayer';
 import { ShapeItem } from './ShapeItem';
+import { ConstraintOverlay } from './ConstraintOverlay';
 import { findSpacingViolations } from '../../lib/spacing';
 import type Konva from 'konva';
 
@@ -26,23 +27,27 @@ export function EditorCanvas({ stageRef }: EditorCanvasProps) {
   const setPan      = useEditorStore((s) => s.setPan);
   const undo        = useEditorStore((s) => s.undo);
   const redo        = useEditorStore((s) => s.redo);
+  const cancelDimensionFlow = useEditorStore((s) => s.cancelDimensionFlow);
+  const dimensionSelectRoomAnchor = useEditorStore((s) => s.dimensionSelectRoomAnchor);
+  const dimensionFlow = useEditorStore((s) => s.dimensionFlow);
+  const selectConstraint = useEditorStore((s) => s.selectConstraint);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const [containerSize, setContainerSize] = useState({ w: 900, h: 700 });
 
   // Compute actual canvas dimensions from metres
   const venueW = layout.venueWidthM * layout.scale;
   const venueH = layout.venueHeightM * layout.scale;
 
-  // Layer visibility map
-  const layerVisibility = Object.fromEntries(layout.layers.map((l) => [l.id, l.visible]));
+  const canvasLayerFilterIds = useEditorStore((s) => s.canvasLayerFilterIds);
   const layerLocked     = Object.fromEntries(layout.layers.map((l) => [l.id, l.locked]));
 
   const violations    = findSpacingViolations(layout.shapes);
   const violatingIds  = new Set(violations.flat().map((s) => s.id));
 
-  // Visible shapes sorted by zIndex
+  // Shapes on layers included in the canvas filter (multi-select), sorted by zIndex
   const visibleShapes = [...layout.shapes]
-    .filter((s) => layerVisibility[s.layer] !== false)
+    .filter((s) => canvasLayerFilterIds.includes(s.layer))
     .sort((a, b) => a.zIndex - b.zIndex);
 
   const handleWheel = useCallback(
@@ -72,7 +77,7 @@ export function EditorCanvas({ stageRef }: EditorCanvasProps) {
   );
 
   const handleStageDragEnd = useCallback(
-    (_e: Konva.KonvaEventObject<DragEvent>) => {
+    () => {
       if (!stageRef.current) return;
       const pos = stageRef.current.position();
       setPan(pos.x, pos.y);
@@ -87,6 +92,14 @@ export function EditorCanvas({ stageRef }: EditorCanvasProps) {
         selectShape(null);
         return;
       }
+      if (activeTool === 'dimension') {
+        if (e.target.name() === 'venue-bg' && dimensionFlow?.step === 'pickA') {
+          dimensionSelectRoomAnchor();
+          return;
+        }
+        cancelDimensionFlow();
+        return;
+      }
       const stage   = stageRef.current;
       if (!stage) return;
       const pointer = stage.getPointerPosition();
@@ -97,7 +110,16 @@ export function EditorCanvas({ stageRef }: EditorCanvasProps) {
       const y = (pointer.y - pos.y) / scale;
       addShape(activeTool, x, y);
     },
-    [activeTool, selectShape, addShape, stageRef]
+    [
+      activeTool,
+      selectShape,
+      selectConstraint,
+      addShape,
+      stageRef,
+      cancelDimensionFlow,
+      dimensionSelectRoomAnchor,
+      dimensionFlow?.step,
+    ]
   );
 
   // Keyboard shortcuts
@@ -111,40 +133,48 @@ export function EditorCanvas({ stageRef }: EditorCanvasProps) {
       if (e.ctrlKey && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
       if (e.ctrlKey && (e.key === 'Z' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); }
       if (e.ctrlKey && e.key === 'd' && selectedShapeId) { e.preventDefault(); duplicateShape(selectedShapeId); }
+      if (e.key === 'Escape' && activeTool === 'dimension') {
+        e.preventDefault();
+        cancelDimensionFlow();
+      }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [selectedShapeId, layout.shapes, layerLocked, deleteShape, duplicateShape, undo, redo]);
+  }, [selectedShapeId, layout.shapes, layerLocked, deleteShape, duplicateShape, undo, redo, activeTool, cancelDimensionFlow]);
 
-  // Container resize observer
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    const obs = new ResizeObserver(() => {
-      // Update on resize if needed
-    });
+    const update = () =>
+      setContainerSize({ w: el.clientWidth, h: el.clientHeight });
+    update();
+    const obs = new ResizeObserver(update);
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
-
-  const containerW = containerRef.current?.clientWidth  ?? 900;
-  const containerH = containerRef.current?.clientHeight ?? 700;
 
   return (
     <div ref={containerRef} className="w-full h-full overflow-hidden bg-stone-200">
       <Stage
         ref={stageRef}
-        width={containerW}
-        height={containerH}
+        width={containerSize.w}
+        height={containerSize.h}
         scaleX={zoom}
         scaleY={zoom}
         x={panX}
         y={panY}
-        draggable={activeTool === 'select' && !selectedShapeId}
+        draggable={(activeTool === 'select' && !selectedShapeId) || activeTool === 'dimension'}
         onWheel={handleWheel}
         onDragEnd={handleStageDragEnd}
         onClick={handleStageClick}
-        style={{ cursor: activeTool === 'select' ? 'default' : 'crosshair' }}
+        style={{
+          cursor:
+            activeTool === 'select'
+              ? 'default'
+              : activeTool === 'dimension'
+                ? 'crosshair'
+                : 'crosshair',
+        }}
       >
         <GridLayer />
         <Layer>
@@ -166,6 +196,7 @@ export function EditorCanvas({ stageRef }: EditorCanvasProps) {
               layerLocked={layerLocked[shape.layer] ?? false}
             />
           ))}
+          <ConstraintOverlay />
         </Layer>
       </Stage>
     </div>
