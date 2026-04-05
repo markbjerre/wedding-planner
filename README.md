@@ -46,6 +46,7 @@ Four canvas layers, each independently controllable:
 - Auto-persist to browser localStorage on every change
 - Download/upload layout as JSON
 - Export canvas as PNG or PDF (A3 landscape)
+- **CLI (Node):** validate, inspect, normalize, and patch layout JSON — [`docs/CLI.md`](docs/CLI.md) (`npm run cli`)
 
 ---
 

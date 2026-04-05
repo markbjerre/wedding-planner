@@ -24,6 +24,10 @@ source ~/.nvm/nvm.sh && npm run preview      # preview production build
 source ~/.nvm/nvm.sh && npm run lint         # ESLint
 source ~/.nvm/nvm.sh && tsc --noEmit         # type-check only (no emit)
 
+# ── Layout JSON (file-based; no Supabase) ───────────────────────
+npm run cli -- --help                        # validate | info | normalize | export | apply | get
+# Full reference: docs/CLI.md
+
 # ── Install ──────────────────────────────────────────────────────
 source ~/.nvm/nvm.sh && npm install          # install all deps
 source ~/.nvm/nvm.sh && npm install <pkg>    # add a package
@@ -44,6 +48,7 @@ git remote set-url origin https://github.com/markbjerre/wedding-planner.git
 ```
 wedding-planner/
 ├── CLAUDE.md                        # ← you are here
+├── cli/index.ts                     # layout JSON CLI (npm run cli)
 ├── package.json
 ├── tsconfig.json
 ├── vite.config.ts
@@ -61,6 +66,7 @@ wedding-planner/
     │   ├── snap.ts                  # snap-to-grid helpers
     │   ├── spacing.ts               # min-spacing / violation detection
     │   ├── storage.ts               # localStorage + JSON file save/load
+    │   ├── layoutMerge.ts           # parse/merge layout JSON (CLI + scripts)
     │   └── export.ts                # PNG + PDF export via Konva + jsPDF
     ├── components/
     │   ├── Canvas/
@@ -112,6 +118,7 @@ Layout is a plain JSON object (`Layout` type). Save/load via:
 - JSON file download/upload
 - Supabase row per auth user (optional)
 - PNG/PDF export of the canvas
+- **CLI:** `npm run cli` — validate, `info`, `normalize`, `apply <patch.json>`, `get <path>` — see `docs/CLI.md`
 
 ---
 
@@ -128,6 +135,11 @@ Layout is a plain JSON object (`Layout` type). Save/load via:
 ---
 
 ## Version History
+
+### v0.4.0 — 2026-03 (layout JSON CLI)
+- **CLI:** `npm run cli` — `validate`, `info`, `normalize`, `export`, `apply`, `get` on layout JSON files (`cli/index.ts`, `tsx`).
+- **Library:** `src/lib/layoutMerge.ts` — `parseLayoutFromJsonText`, `mergeLayoutPatch`, `getAtPath` (shared with CLI).
+- **Docs:** `docs/CLI.md`; Cursor skill `wedding-planner-cli` (workspace `.cursor/skills/`).
 
 ### v0.3.0 — 2026-03 (Fusion-style dimension lock)
 - **Edge distance constraints:** `Layout.constraints[]` — gap in metres between axis-aligned edges of two shapes (rotation ignored; same AABB convention as `spacing.ts`).

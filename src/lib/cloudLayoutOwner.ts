@@ -28,3 +28,11 @@ export function persistCloudLayoutOwner(owner: CloudLayoutOwnerId): void {
 export function layoutStorageOwnerKey(owner: CloudLayoutOwnerId): string {
   return owner === 'self' ? 'self' : owner;
 }
+
+/** Which Supabase `wedding_planner_layouts.user_id` row to upsert for the current session. */
+export function resolveLayoutRowUserId(
+  sessionUserId: string,
+  cloudLayoutOwnerId: CloudLayoutOwnerId
+): string {
+  return cloudLayoutOwnerId === 'self' ? sessionUserId : cloudLayoutOwnerId;
+}

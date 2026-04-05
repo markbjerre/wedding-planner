@@ -74,7 +74,13 @@ docker compose up -d ai-vaerksted-wedding-planner
 ```bash
 curl -sI https://ai-vaerksted.cloud/wedding-planner/ | head -5
 curl -sI https://ai-vaerksted.cloud/wedding-planner/assets/ | head -3
+curl -s https://ai-vaerksted.cloud/wedding-planner/health
+curl -s https://ai-vaerksted.cloud/wedding-planner/health.json
 ```
+
+Health checks: **`/wedding-planner/health`** returns JSON from nginx; **`/wedding-planner/health.json`** is the static file from the build (same payload).
+
+**Local tests:** `npm run test` (Vitest), `npm run test:e2e` (Playwright; starts Vite on 5173, or set `CI=1` to force a fresh server in CI). **Layout JSON CLI** (dev machine): `npm run cli` — see [CLI.md](./CLI.md).
 
 Open the app in a browser; sign-in under **Layout → Cloud sync** if using Supabase.
 

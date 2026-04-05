@@ -153,8 +153,50 @@ export function EditorCanvas({ stageRef }: EditorCanvasProps) {
     return () => obs.disconnect();
   }, []);
 
+  /** Two-finger pinch to zoom (mobile). */
+  const pinchRef = useRef<{ dist0: number; z0: number } | null>(null);
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 2) {
+        pinchRef.current = null;
+        return;
+      }
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      pinchRef.current = { dist0: dist, z0: useEditorStore.getState().zoom };
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length !== 2 || !pinchRef.current) return;
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const { dist0, z0 } = pinchRef.current;
+      const next = Math.max(0.2, Math.min(4, z0 * (dist / dist0)));
+      setZoom(next);
+      e.preventDefault();
+    };
+    const onTouchEnd = () => {
+      pinchRef.current = null;
+    };
+    el.addEventListener('touchstart', onTouchStart, { passive: false });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd);
+    el.addEventListener('touchcancel', onTouchEnd);
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+      el.removeEventListener('touchcancel', onTouchEnd);
+    };
+  }, [setZoom]);
+
   return (
-    <div ref={containerRef} className="w-full h-full overflow-hidden bg-stone-200">
+    <div ref={containerRef} className="w-full h-full overflow-hidden bg-stone-200 touch-none">
       <Stage
         ref={stageRef}
         width={containerSize.w}
