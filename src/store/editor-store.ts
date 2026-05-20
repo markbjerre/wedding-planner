@@ -14,7 +14,7 @@ import {
 } from '../lib/cloudLayoutOwner';
 import type { CloudLayoutOwnerId } from '../types';
 import { queueRemoteSave } from '../lib/remoteSaveQueue';
-import { SAMPLE_LAYOUT } from '../data/sample-layout';
+import { KOSTALD_LAYOUT } from '../data/kostald-layout';
 import {
   normalizeLayout,
   satisfyConstraintsAfterMove,
@@ -96,9 +96,12 @@ function pushHistoryFn(state: StoreState): Partial<StoreState> {
 /** Prefer browser localStorage so edits survive refresh and new dev/prod builds (same origin). */
 function loadInitialLayout(): Layout {
   const owner = readStoredCloudLayoutOwner();
-  const saved = loadFromLocalStorage(layoutStorageOwnerKey(owner));
+  const ownerKey = layoutStorageOwnerKey(owner);
+  const saved = loadFromLocalStorage(ownerKey);
   if (saved) return normalizeLayout(saved);
-  return normalizeLayout(SAMPLE_LAYOUT);
+  const layout = normalizeLayout(KOSTALD_LAYOUT);
+  saveToLocalStorage(layout, ownerKey);
+  return layout;
 }
 
 const INITIAL_LAYOUT = loadInitialLayout();
@@ -505,7 +508,7 @@ export const useEditorStore = create<StoreState>((set, get) => {
           const remote = await fetchRemoteLayout(uid);
           const local = loadFromLocalStorage(layoutStorageOwnerKey('self'));
           if (!remote) {
-            get().setLayout(local ? normalizeLayout(local) : normalizeLayout(SAMPLE_LAYOUT));
+            get().setLayout(local ? normalizeLayout(local) : normalizeLayout(KOSTALD_LAYOUT));
             return;
           }
           const remoteMs = new Date(remote.updatedAt).getTime();
@@ -526,7 +529,7 @@ export const useEditorStore = create<StoreState>((set, get) => {
       const remote = await fetchRemoteLayout(remoteOwnerUuid);
       const local = loadFromLocalStorage(layoutStorageOwnerKey(normalized));
       if (!remote) {
-        get().setLayout(local ? normalizeLayout(local) : normalizeLayout(SAMPLE_LAYOUT));
+        get().setLayout(local ? normalizeLayout(local) : normalizeLayout(KOSTALD_LAYOUT));
         return;
       }
       const remoteMs = new Date(remote.updatedAt).getTime();

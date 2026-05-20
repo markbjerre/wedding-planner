@@ -1,6 +1,10 @@
 # Wedding Planner — Claude Configuration
 
-**Last updated:** 2026-03
+**Last updated:** 2026-05
+
+## Default venue
+
+**Kostald (Grønnessegaard)** — default layout `KOSTALD_LAYOUT` in `src/data/kostald-layout.ts`. **13.6 m** wide, **24 m** clear hall (depot → divider), **15 pillars**, kitchen + depots. See **`docs/KOSTALD_VENUE.md`**. Reference plan: `tmp/venue-floor-plan.html`.
 
 ## Workspace (Code Projects)
 
@@ -135,6 +139,12 @@ Layout is a plain JSON object (`Layout` type). Save/load via:
 ---
 
 ## Version History
+
+### v0.5.0 — 2026-05 (Kostald venue — authoritative)
+- **Kostald:** `KOSTALD_LAYOUT` — **13.6 m** wide, **24 m** clear hall, **5×3** pillars, kitchen (7.03 m), depots, dance floor (rows 2–3).
+- **Docs:** `docs/KOSTALD_VENUE.md` (authoritative); proportional HTML `tmp/venue-floor-plan.html`.
+- **Accommodation:** Grønnessegaard sleeping rooms via `applyAccommodationSeed`.
+- **Tests:** `kostald-venue.test.ts`, `e2e/kostald-venue.spec.ts`, `e2e/venue-floor-plan.spec.ts`.
 
 ### v0.4.0 — 2026-03 (layout JSON CLI)
 - **CLI:** `npm run cli` — `validate`, `info`, `normalize`, `export`, `apply`, `get` on layout JSON files (`cli/index.ts`, `tsx`).

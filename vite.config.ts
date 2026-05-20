@@ -15,6 +15,19 @@ function weddingPlannerHealthDev(): Plugin {
           res.end(body)
           return
         }
+        if (u === '/wedding-planner/tmp/venue-floor-plan.html' || u.endsWith('/tmp/venue-floor-plan.html')) {
+          import('node:fs/promises').then((fs) =>
+            fs.readFile(new URL('../tmp/venue-floor-plan.html', import.meta.url), 'utf-8')
+          ).then((html) => {
+            res.setHeader('Content-Type', 'text/html; charset=utf-8')
+            res.setHeader('Cache-Control', 'no-store')
+            res.end(html)
+          }).catch(() => {
+            res.statusCode = 404
+            res.end('Not found')
+          })
+          return
+        }
         next()
       })
     },
