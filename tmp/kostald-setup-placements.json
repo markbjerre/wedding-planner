@@ -1,0 +1,930 @@
+{
+  "updatedAt": "2026-07-19T13:43:11.953Z",
+  "clearR_m": 1.18,
+  "tableR_m": 0.68,
+  "minTableDist_m": 2.4,
+  "pillarKeep_m": 1.41,
+  "note": "Hall-local metres (Y=0 at kitchen/hall join). Canvas: yM = 7.03 + y, xM = x. Scale 40 px/m.",
+  "setups": {
+    "A": [
+      {
+        "name": "Finland",
+        "x": 1.18,
+        "y": 5.53,
+        "seats": 8
+      },
+      {
+        "name": "Denmark",
+        "x": 4.18,
+        "y": 5.53,
+        "seats": 8
+      },
+      {
+        "name": "Sweden",
+        "x": 8.23,
+        "y": 5.53,
+        "seats": 8
+      },
+      {
+        "name": "Greece",
+        "x": 12.28,
+        "y": 5.53,
+        "seats": 8
+      },
+      {
+        "name": "Spain",
+        "x": 6.13,
+        "y": 7.03,
+        "seats": 8
+      },
+      {
+        "name": "France",
+        "x": 10.18,
+        "y": 7.03,
+        "seats": 8
+      },
+      {
+        "name": "Italy",
+        "x": 2.68,
+        "y": 7.48,
+        "seats": 8
+      },
+      {
+        "name": "USA",
+        "x": 12.28,
+        "y": 8.23,
+        "seats": 8
+      },
+      {
+        "name": "Norway",
+        "x": 8.08,
+        "y": 8.53,
+        "seats": 8
+      },
+      {
+        "name": "Germany",
+        "x": 4.63,
+        "y": 8.98,
+        "seats": 8
+      },
+      {
+        "name": "Japan",
+        "x": 1.18,
+        "y": 9.43,
+        "seats": 8
+      },
+      {
+        "name": "Colombia",
+        "x": 9.73,
+        "y": 10.33,
+        "seats": 8
+      },
+      {
+        "name": "Netherlands",
+        "x": 6.43,
+        "y": 10.63,
+        "seats": 8
+      },
+      {
+        "name": "Croatia",
+        "x": 12.13,
+        "y": 10.63,
+        "seats": 8
+      },
+      {
+        "name": "Guatemala",
+        "x": 3.13,
+        "y": 10.93,
+        "seats": 8
+      }
+    ],
+    "B": [
+      {
+        "name": "Finland",
+        "x": 6.73,
+        "y": 6.58,
+        "seats": 8
+      },
+      {
+        "name": "Denmark",
+        "x": 6.73,
+        "y": 10.63,
+        "seats": 8
+      },
+      {
+        "name": "Sweden",
+        "x": 6.73,
+        "y": 14.68,
+        "seats": 8
+      },
+      {
+        "name": "Greece",
+        "x": 8.23,
+        "y": 8.53,
+        "seats": 8
+      },
+      {
+        "name": "Spain",
+        "x": 5.23,
+        "y": 8.53,
+        "seats": 8
+      },
+      {
+        "name": "France",
+        "x": 8.23,
+        "y": 12.58,
+        "seats": 8
+      },
+      {
+        "name": "Italy",
+        "x": 8.98,
+        "y": 5.53,
+        "seats": 8
+      },
+      {
+        "name": "USA",
+        "x": 5.23,
+        "y": 12.58,
+        "seats": 8
+      },
+      {
+        "name": "Norway",
+        "x": 4.48,
+        "y": 5.53,
+        "seats": 8
+      },
+      {
+        "name": "Germany",
+        "x": 8.83,
+        "y": 15.88,
+        "seats": 8
+      },
+      {
+        "name": "Japan",
+        "x": 4.63,
+        "y": 15.88,
+        "seats": 8
+      },
+      {
+        "name": "Colombia",
+        "x": 9.73,
+        "y": 10.48,
+        "seats": 8
+      },
+      {
+        "name": "Netherlands",
+        "x": 3.73,
+        "y": 10.48,
+        "seats": 8
+      },
+      {
+        "name": "Croatia",
+        "x": 10.48,
+        "y": 7.48,
+        "seats": 8
+      },
+      {
+        "name": "Guatemala",
+        "x": 2.98,
+        "y": 7.48,
+        "seats": 8
+      }
+    ],
+    "C": [
+      {
+        "name": "Finland",
+        "x": 5.38,
+        "y": 5.53,
+        "seats": 8
+      },
+      {
+        "name": "Denmark",
+        "x": 8.23,
+        "y": 5.53,
+        "seats": 8
+      },
+      {
+        "name": "Sweden",
+        "x": 1.33,
+        "y": 5.53,
+        "seats": 8
+      },
+      {
+        "name": "Greece",
+        "x": 12.28,
+        "y": 5.53,
+        "seats": 8
+      },
+      {
+        "name": "Spain",
+        "x": 3.43,
+        "y": 7.03,
+        "seats": 8
+      },
+      {
+        "name": "France",
+        "x": 10.18,
+        "y": 7.03,
+        "seats": 8
+      },
+      {
+        "name": "Italy",
+        "x": 1.18,
+        "y": 7.93,
+        "seats": 8
+      },
+      {
+        "name": "USA",
+        "x": 5.53,
+        "y": 8.23,
+        "seats": 8
+      },
+      {
+        "name": "Norway",
+        "x": 8.08,
+        "y": 8.23,
+        "seats": 8
+      },
+      {
+        "name": "Germany",
+        "x": 12.28,
+        "y": 8.23,
+        "seats": 8
+      },
+      {
+        "name": "Japan",
+        "x": 4.03,
+        "y": 10.18,
+        "seats": 8
+      },
+      {
+        "name": "Colombia",
+        "x": 9.58,
+        "y": 10.18,
+        "seats": 8
+      },
+      {
+        "name": "Netherlands",
+        "x": 1.63,
+        "y": 10.33,
+        "seats": 8
+      },
+      {
+        "name": "Croatia",
+        "x": 11.98,
+        "y": 10.63,
+        "seats": 8
+      },
+      {
+        "name": "Guatemala",
+        "x": 5.53,
+        "y": 12.13,
+        "seats": 8
+      }
+    ],
+    "D": [
+      {
+        "name": "Finland",
+        "x": 12.28,
+        "y": 5.53,
+        "seats": 8
+      },
+      {
+        "name": "Denmark",
+        "x": 10.48,
+        "y": 7.18,
+        "seats": 8
+      },
+      {
+        "name": "Sweden",
+        "x": 8.68,
+        "y": 5.53,
+        "seats": 8
+      },
+      {
+        "name": "Greece",
+        "x": 6.88,
+        "y": 7.18,
+        "seats": 8
+      },
+      {
+        "name": "Spain",
+        "x": 5.08,
+        "y": 5.53,
+        "seats": 8
+      },
+      {
+        "name": "France",
+        "x": 3.28,
+        "y": 7.18,
+        "seats": 8
+      },
+      {
+        "name": "Italy",
+        "x": 1.33,
+        "y": 5.53,
+        "seats": 8
+      },
+      {
+        "name": "USA",
+        "x": 1.18,
+        "y": 8.38,
+        "seats": 8
+      },
+      {
+        "name": "Norway",
+        "x": 4.48,
+        "y": 9.28,
+        "seats": 8
+      },
+      {
+        "name": "Germany",
+        "x": 8.23,
+        "y": 9.28,
+        "seats": 8
+      },
+      {
+        "name": "Japan",
+        "x": 12.28,
+        "y": 8.83,
+        "seats": 8
+      },
+      {
+        "name": "Colombia",
+        "x": 12.28,
+        "y": 11.23,
+        "seats": 8
+      },
+      {
+        "name": "Netherlands",
+        "x": 9.88,
+        "y": 11.08,
+        "seats": 8
+      },
+      {
+        "name": "Croatia",
+        "x": 7.03,
+        "y": 11.38,
+        "seats": 8
+      },
+      {
+        "name": "Guatemala",
+        "x": 3.28,
+        "y": 11.38,
+        "seats": 8
+      }
+    ],
+    "E": [
+      {
+        "name": "Finland",
+        "x": 6.73,
+        "y": 10.63,
+        "seats": 8
+      },
+      {
+        "name": "Denmark",
+        "x": 1.93,
+        "y": 15.43,
+        "seats": 8
+      },
+      {
+        "name": "Sweden",
+        "x": 11.53,
+        "y": 15.43,
+        "seats": 8
+      },
+      {
+        "name": "Greece",
+        "x": 11.83,
+        "y": 6.13,
+        "seats": 8
+      },
+      {
+        "name": "Spain",
+        "x": 1.63,
+        "y": 5.98,
+        "seats": 8
+      },
+      {
+        "name": "France",
+        "x": 4.03,
+        "y": 5.98,
+        "seats": 8
+      },
+      {
+        "name": "Italy",
+        "x": 9.43,
+        "y": 5.83,
+        "seats": 8
+      },
+      {
+        "name": "USA",
+        "x": 9.13,
+        "y": 10.63,
+        "seats": 8
+      },
+      {
+        "name": "Norway",
+        "x": 4.33,
+        "y": 15.43,
+        "seats": 8
+      },
+      {
+        "name": "Germany",
+        "x": 4.63,
+        "y": 11.83,
+        "seats": 8
+      },
+      {
+        "name": "Japan",
+        "x": 5.53,
+        "y": 8.53,
+        "seats": 8
+      },
+      {
+        "name": "Colombia",
+        "x": 9.13,
+        "y": 15.58,
+        "seats": 8
+      },
+      {
+        "name": "Netherlands",
+        "x": 1.48,
+        "y": 8.38,
+        "seats": 8
+      },
+      {
+        "name": "Croatia",
+        "x": 1.33,
+        "y": 13.03,
+        "seats": 8
+      },
+      {
+        "name": "Guatemala",
+        "x": 12.28,
+        "y": 13.03,
+        "seats": 8
+      }
+    ],
+    "F": [
+      {
+        "name": "Finland",
+        "x": 1.18,
+        "y": 15.88,
+        "seats": 8
+      },
+      {
+        "name": "Denmark",
+        "x": 3.58,
+        "y": 15.88,
+        "seats": 8
+      },
+      {
+        "name": "Sweden",
+        "x": 5.98,
+        "y": 15.88,
+        "seats": 8
+      },
+      {
+        "name": "Greece",
+        "x": 8.38,
+        "y": 15.88,
+        "seats": 8
+      },
+      {
+        "name": "Spain",
+        "x": 11.53,
+        "y": 15.88,
+        "seats": 8
+      },
+      {
+        "name": "France",
+        "x": 4.78,
+        "y": 13.78,
+        "seats": 8
+      },
+      {
+        "name": "Italy",
+        "x": 9.28,
+        "y": 13.63,
+        "seats": 8
+      },
+      {
+        "name": "USA",
+        "x": 1.18,
+        "y": 13.48,
+        "seats": 8
+      },
+      {
+        "name": "Norway",
+        "x": 12.28,
+        "y": 13.48,
+        "seats": 8
+      },
+      {
+        "name": "Germany",
+        "x": 3.28,
+        "y": 11.83,
+        "seats": 8
+      },
+      {
+        "name": "Japan",
+        "x": 6.28,
+        "y": 11.83,
+        "seats": 8
+      },
+      {
+        "name": "Colombia",
+        "x": 10.48,
+        "y": 11.53,
+        "seats": 8
+      },
+      {
+        "name": "Netherlands",
+        "x": 1.18,
+        "y": 10.63,
+        "seats": 8
+      },
+      {
+        "name": "Croatia",
+        "x": 8.23,
+        "y": 10.33,
+        "seats": 8
+      },
+      {
+        "name": "Guatemala",
+        "x": 4.78,
+        "y": 9.88,
+        "seats": 8
+      }
+    ],
+    "G": [
+      {
+        "name": "Finland",
+        "x": 6.43,
+        "y": 10.63,
+        "seats": 8
+      },
+      {
+        "name": "Denmark",
+        "x": 8.53,
+        "y": 9.28,
+        "seats": 8
+      },
+      {
+        "name": "Sweden",
+        "x": 8.53,
+        "y": 11.98,
+        "seats": 8
+      },
+      {
+        "name": "Greece",
+        "x": 4.78,
+        "y": 12.43,
+        "seats": 8
+      },
+      {
+        "name": "Spain",
+        "x": 4.63,
+        "y": 8.83,
+        "seats": 8
+      },
+      {
+        "name": "France",
+        "x": 6.73,
+        "y": 7.63,
+        "seats": 8
+      },
+      {
+        "name": "Italy",
+        "x": 10.18,
+        "y": 7.48,
+        "seats": 8
+      },
+      {
+        "name": "USA",
+        "x": 9.73,
+        "y": 14.08,
+        "seats": 8
+      },
+      {
+        "name": "Norway",
+        "x": 2.98,
+        "y": 10.63,
+        "seats": 8
+      },
+      {
+        "name": "Germany",
+        "x": 10.63,
+        "y": 10.63,
+        "seats": 8
+      },
+      {
+        "name": "Japan",
+        "x": 2.83,
+        "y": 7.03,
+        "seats": 8
+      },
+      {
+        "name": "Colombia",
+        "x": 3.28,
+        "y": 14.53,
+        "seats": 8
+      },
+      {
+        "name": "Netherlands",
+        "x": 5.98,
+        "y": 14.53,
+        "seats": 8
+      },
+      {
+        "name": "Croatia",
+        "x": 11.83,
+        "y": 15.28,
+        "seats": 8
+      },
+      {
+        "name": "Guatemala",
+        "x": 4.93,
+        "y": 5.83,
+        "seats": 8
+      }
+    ],
+    "H": [
+      {
+        "name": "Finland",
+        "x": 1.18,
+        "y": 5.53,
+        "seats": 8
+      },
+      {
+        "name": "Denmark",
+        "x": 1.18,
+        "y": 8.08,
+        "seats": 8
+      },
+      {
+        "name": "Sweden",
+        "x": 1.18,
+        "y": 10.48,
+        "seats": 8
+      },
+      {
+        "name": "Greece",
+        "x": 1.18,
+        "y": 12.88,
+        "seats": 8
+      },
+      {
+        "name": "Spain",
+        "x": 1.18,
+        "y": 15.43,
+        "seats": 8
+      },
+      {
+        "name": "France",
+        "x": 3.28,
+        "y": 6.73,
+        "seats": 8
+      },
+      {
+        "name": "Italy",
+        "x": 3.28,
+        "y": 11.68,
+        "seats": 8
+      },
+      {
+        "name": "USA",
+        "x": 3.43,
+        "y": 14.53,
+        "seats": 8
+      },
+      {
+        "name": "Norway",
+        "x": 4.33,
+        "y": 8.98,
+        "seats": 8
+      },
+      {
+        "name": "Germany",
+        "x": 5.38,
+        "y": 5.53,
+        "seats": 8
+      },
+      {
+        "name": "Japan",
+        "x": 5.38,
+        "y": 12.88,
+        "seats": 8
+      },
+      {
+        "name": "Colombia",
+        "x": 5.53,
+        "y": 15.73,
+        "seats": 8
+      },
+      {
+        "name": "Netherlands",
+        "x": 6.28,
+        "y": 10.48,
+        "seats": 8
+      },
+      {
+        "name": "Croatia",
+        "x": 6.43,
+        "y": 7.78,
+        "seats": 8
+      },
+      {
+        "name": "Guatemala",
+        "x": 7.63,
+        "y": 14.38,
+        "seats": 8
+      }
+    ],
+    "I": [
+      {
+        "name": "Norway",
+        "x": 1.32,
+        "y": 5.73,
+        "seats": 8
+      },
+      {
+        "name": "Finland",
+        "x": 4.8,
+        "y": 5.73,
+        "seats": 8
+      },
+      {
+        "name": "Spain",
+        "x": 12.28,
+        "y": 5.73,
+        "seats": 8
+      },
+      {
+        "name": "Denmark",
+        "x": 1.32,
+        "y": 9.08,
+        "seats": 8
+      },
+      {
+        "name": "Greece",
+        "x": 4.8,
+        "y": 9.08,
+        "seats": 8
+      },
+      {
+        "name": "USA",
+        "x": 8.8,
+        "y": 9.08,
+        "seats": 8
+      },
+      {
+        "name": "Italy",
+        "x": 12.28,
+        "y": 9.08,
+        "seats": 8
+      },
+      {
+        "name": "France",
+        "x": 1.32,
+        "y": 12.43,
+        "seats": 8
+      },
+      {
+        "name": "Germany",
+        "x": 4.8,
+        "y": 12.43,
+        "seats": 8
+      },
+      {
+        "name": "Japan",
+        "x": 8.8,
+        "y": 12.43,
+        "seats": 8
+      },
+      {
+        "name": "Colombia",
+        "x": 12.28,
+        "y": 12.43,
+        "seats": 8
+      },
+      {
+        "name": "Netherlands",
+        "x": 1.32,
+        "y": 15.78,
+        "seats": 8
+      },
+      {
+        "name": "Sweden",
+        "x": 4.8,
+        "y": 15.78,
+        "seats": 8
+      },
+      {
+        "name": "Croatia",
+        "x": 8.8,
+        "y": 15.78,
+        "seats": 8
+      },
+      {
+        "name": "Guatemala",
+        "x": 12.28,
+        "y": 15.78,
+        "seats": 8
+      }
+    ],
+    "J": [
+      {
+        "name": "Finland",
+        "x": 1.18,
+        "y": 5.53,
+        "seats": 8
+      },
+      {
+        "name": "Denmark",
+        "x": 4.18,
+        "y": 5.53,
+        "seats": 8
+      },
+      {
+        "name": "Sweden",
+        "x": 2.68,
+        "y": 7.48,
+        "seats": 8
+      },
+      {
+        "name": "Greece",
+        "x": 4.93,
+        "y": 8.38,
+        "seats": 8
+      },
+      {
+        "name": "Spain",
+        "x": 1.18,
+        "y": 9.43,
+        "seats": 8
+      },
+      {
+        "name": "France",
+        "x": 3.43,
+        "y": 10.48,
+        "seats": 8
+      },
+      {
+        "name": "Italy",
+        "x": 1.18,
+        "y": 11.83,
+        "seats": 8
+      },
+      {
+        "name": "USA",
+        "x": 4.93,
+        "y": 12.43,
+        "seats": 8
+      },
+      {
+        "name": "Norway",
+        "x": 1.18,
+        "y": 14.23,
+        "seats": 8
+      },
+      {
+        "name": "Germany",
+        "x": 3.58,
+        "y": 14.53,
+        "seats": 8
+      },
+      {
+        "name": "Japan",
+        "x": 12.28,
+        "y": 5.53,
+        "seats": 8
+      },
+      {
+        "name": "Colombia",
+        "x": 9.43,
+        "y": 5.53,
+        "seats": 8
+      },
+      {
+        "name": "Netherlands",
+        "x": 11.08,
+        "y": 7.63,
+        "seats": 8
+      },
+      {
+        "name": "Croatia",
+        "x": 8.68,
+        "y": 7.93,
+        "seats": 8
+      },
+      {
+        "name": "Guatemala",
+        "x": 12.28,
+        "y": 9.73,
+        "seats": 8
+      }
+    ]
+  }
+}

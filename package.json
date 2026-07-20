@@ -11,7 +11,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "cli": "tsx cli/index.ts"
+    "cli": "tsx cli/index.ts",
+    "build:seating": "node scripts/generate-seating-planner-html.mjs && node -e \"require('fs').copyFileSync('tmp/seating-planner.html','deploy/seating/planner.html')\"",
+    "handout:pdf": "node scripts/generate-vendor-handout.mjs",
+    "seating:guest-ids": "node scripts/guest-ids-by-name.mjs",
+    "seating:merge": "node scripts/merge-seating-guests.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.101.1",

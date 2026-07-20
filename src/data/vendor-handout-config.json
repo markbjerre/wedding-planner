@@ -1,0 +1,6 @@
+{
+  "setupId": "I",
+  "placementsFile": "tmp/kostald-setup-placements.json",
+  "kitchenListFile": "tmp/kitchen-seat-list.md",
+  "note": "Change setupId (A–J) to switch floor layout, or edit that setup’s x/y (and name) in the placements file. Then: npm run handout:pdf. Regenerate placements with: node scripts/generate-kostald-blueprint.mjs"
+}
